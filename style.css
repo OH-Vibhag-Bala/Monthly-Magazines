@@ -1,0 +1,233 @@
+:root {
+    --primary-color: #FF9933;
+    /* Saffron - HSS Flag Color */
+    --accent-color: #FFCC00;
+    /* Yellow */
+    --text-color: #8b0000;
+    /* Dark Red */
+    --bg-color: #FFFDD0;
+    /* Cream */
+    --font-heading: 'Rozha One', serif;
+    --font-body: 'Mukta', sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    font-family: var(--font-body);
+    background-color: #f0e6d2;
+    background-image: url('pattern_bg.png');
+    /* Use generated pattern */
+    background-size: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+}
+
+.magazine-container {
+    perspective: 1500px;
+    width: 800px;
+    height: 600px;
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.book {
+    width: 400px;
+    /* Half the container width */
+    height: 550px;
+    position: relative;
+    transform-style: preserve-3d;
+    transition: transform 1s;
+}
+
+.page {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: left;
+    transform-style: preserve-3d;
+    transition: transform 1s cubic-bezier(0.645, 0.045, 0.355, 1);
+    background-color: white;
+    border-radius: 0 5px 5px 0;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.2);
+}
+
+.front,
+.back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    border: 1px solid #ddd;
+    background-color: var(--bg-color);
+}
+
+.front {
+    z-index: 2;
+}
+
+.back {
+    transform: rotateY(180deg);
+    z-index: 1;
+    border-radius: 5px 0 0 5px;
+    /* Invert radius for back */
+    background: linear-gradient(to right, #e3dac9, #fffdd0);
+    /* Shadow in the spine */
+}
+
+/* Page Folding States */
+.page.flipped {
+    transform: rotateY(-180deg);
+}
+
+/* Specific Page Styling */
+.cover-design {
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    border: 5px solid var(--primary-color);
+    padding: 10px;
+    border-radius: 5px;
+    background: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.hss-branding {
+    font-family: var(--font-heading);
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.cover-img {
+    width: 100%;
+    height: auto;
+    max-height: 320px;
+    object-fit: cover;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    border: 2px solid var(--accent-color);
+}
+
+.magazine-title {
+    font-family: var(--font-heading);
+    color: var(--text-color);
+    font-size: 1.8rem;
+    /* Adjusted for longer title */
+    margin: 10px 0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+    line-height: 1.2;
+}
+
+.edition-text {
+    font-weight: bold;
+    color: var(--primary-color);
+    margin-top: auto;
+    /* Push to bottom */
+}
+
+.page-content {
+    width: 100%;
+    height: 100%;
+    border: 2px double var(--primary-color);
+    padding: 20px;
+    text-align: center;
+    overflow-y: auto;
+}
+
+.back-cover {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    background-color: #ffebcd;
+}
+
+h2 {
+    font-family: var(--font-heading);
+    color: var(--text-color);
+    border-bottom: 2px solid var(--accent-color);
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.video-container {
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+    border: 4px solid var(--text-color);
+    margin-bottom: 15px;
+}
+
+.gallery {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+}
+
+.gallery img {
+    width: 100%;
+    border-radius: 5px;
+    border: 2px solid var(--accent-color);
+    transition: transform 0.3s;
+}
+
+.gallery img:hover {
+    transform: scale(1.05);
+}
+
+.controls {
+    position: absolute;
+    bottom: -50px;
+    display: flex;
+    gap: 20px;
+}
+
+button {
+    padding: 10px 20px;
+    font-family: var(--font-body);
+    font-weight: bold;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s;
+}
+
+button:hover {
+    background-color: #e68a00;
+}
+
+button:disabled {
+    background-color: #ccc;
+    cursor: not-allowed;
+}
+
+/* Links */
+a {
+    color: var(--text-color);
+    text-decoration: none;
+    font-weight: bold;
+}
+
+a:hover {
+    text-decoration: underline;
+}
