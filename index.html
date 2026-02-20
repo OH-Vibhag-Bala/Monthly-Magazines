@@ -11,7 +11,6 @@
     rel="stylesheet"
   />
 
-  <!-- Album CSS (generic; works for every shakha album) -->
   <style>
     .page-content { position: relative; }
 
@@ -23,17 +22,12 @@
       opacity: 0.75;
     }
 
-    /* Title-only left pages */
-    .title-only {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 320px;
-      text-align: center;
-    }
-    .title-only h2 { margin: 0; }
+    /* Activities (left pages) */
+    .activities h2 { margin-top: 0; }
+    .activities ul { margin: 8px 0 0; padding-left: 18px; }
+    .activities .ornament { margin-top: 14px; }
 
-    /* Album widget */
+    /* Album widget (right pages) */
     .album { margin-top: 12px; }
     .album-slides {
       position: relative;
@@ -95,8 +89,8 @@
   <div class="magazine-container">
     <div class="book" id="book">
 
-      <!-- SHEET 1: Page 1 (Cover) + Page 2 (Gajanan title - left) -->
-      <div class="page" id="page1">
+      <!-- SHEET 1: Page 1 (Cover) + Page 2 (Gajanan activities - left) -->
+      <div class="page" id="sheet1">
         <div class="front">
           <div class="cover-design">
             <div class="hss-branding">HSS Balagokulam</div>
@@ -106,34 +100,37 @@
           </div>
         </div>
         <div class="back">
-            <div class="page-content">
-                <h2>Gajanan Shakha</h2>
-                <p>Namaste Kids! Welcome to the January edition of your favorite magazine.</p>
-                <p><strong>Focus of the Month:</strong> Inspiring Stories of Sri Krishna.</p>
-                <p>Let us learn, play, and grow with pride.</p>
-                <div class="ornament"></div>
-            </div>
+          <div class="page-content activities">
+            <h2>Gajanan Shakha</h2>
+            <p>Shakha activities and highlights:</p>
+            <ul>
+              <li>Prayer / Shlokas practice</li>
+              <li>Games and team-building</li>
+              <li>Story / discussion</li>
+            </ul>
+            <div class="ornament"></div>
+            <div class="page-number">2</div>
+          </div>
         </div>
       </div>
 
-      <!-- SHEET 2: Page 3 (Gajanan album - right) + Page 4 (Kartikeya title - left) -->
-      <div class="page" id="page2">
+      <!-- SHEET 2: Page 3 (Gajanan album - right) + Page 4 (Kartikeya activities - left) -->
+      <div class="page" id="sheet2">
         <div class="front">
           <div class="page-content">
             <h2>Gajanan Shakha</h2>
 
-            <!-- Replace src with your real image/video URLs or local files -->
             <div class="album" data-album="gajanan">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="gajanan002.jpg" alt="Gajanan Shakha media 1" />
+                  <img loading="lazy" src="gajanan002.jpg" alt="Gajanan Shakha photo 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="gajanan003.jpg" alt="Gajanan Shakha media 2" />
+                  <img loading="lazy" src="gajanan003.jpg" alt="Gajanan Shakha photo 2" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="gajanana001.jpg" alt="Gajanan Shakha media 3" />
-                  <!-- OR: <video controls preload="metadata"><source src="gajanan_03.mp4" type="video/mp4" /></video> -->
+                  <img loading="lazy" src="gajanana001.jpg" alt="Gajanan Shakha photo 3" />
+                  <!-- If this is a typo, rename to gajanan001.jpg -->
                 </div>
               </div>
 
@@ -156,17 +153,22 @@
         </div>
 
         <div class="back">
-          <div class="page-content title-only">
-            <div>
-              <h2>Kartikeya Shakha</h2>
-            </div>
+          <div class="page-content activities">
+            <h2>Kartikeya Shakha</h2>
+            <p>Shakha activities and highlights:</p>
+            <ul>
+              <li>Prayer / Shlokas practice</li>
+              <li>Yoga / exercises</li>
+              <li>Story / discussion</li>
+            </ul>
+            <div class="ornament"></div>
             <div class="page-number">4</div>
           </div>
         </div>
       </div>
 
-      <!-- SHEET 3: Page 5 (Kartikeya album - right) + Page 6 (Pratap title - left) -->
-      <div class="page" id="page3">
+      <!-- SHEET 3: Page 5 (Kartikeya album - right) + Page 6 (Pratap activities - left) -->
+      <div class="page" id="sheet3">
         <div class="front">
           <div class="page-content">
             <h2>Kartikeya Shakha</h2>
@@ -174,13 +176,13 @@
             <div class="album" data-album="kartikeya">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="karthikeya003.jpg" alt="Kartikeya Shakha media 1" />
+                  <img loading="lazy" src="karthikeya003.jpg" alt="Kartikeya Shakha photo 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="karthikeya002.jpg" alt="Kartikeya Shakha media 2" />
+                  <img loading="lazy" src="karthikeya002.jpg" alt="Kartikeya Shakha photo 2" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="karthikeya003.jpg" alt="Kartikeya Shakha media 3" />
+                  <img loading="lazy" src="karthikeya003.jpg" alt="Kartikeya Shakha photo 3" />
                 </div>
               </div>
 
@@ -203,36 +205,40 @@
         </div>
 
         <div class="back">
-            <div class="page-content">
-                <h2>Karthikeya Shakha</h2>
-                <p>Namaste Kids! Welcome to the January edition of your favorite magazine.</p>
-                <p><strong>Focus of the Month:</strong> Inspiring Stories of Sri Krishna.</p>
-                <p>Let us learn, play, and grow with pride.</p>
-                <div class="ornament"></div>
-            </div>
+          <div class="page-content activities">
+            <h2>Pratap Shakha</h2>
+            <p>Shakha activities and highlights:</p>
+            <ul>
+              <li>Prayer / Shlokas practice</li>
+              <li>Outdoor games</li>
+              <li>Craft / learning activity</li>
+            </ul>
+            <div class="ornament"></div>
+            <div class="page-number">6</div>
+          </div>
         </div>
       </div>
 
-      <!-- SHEET 4: Page 7 (Pratap album - right) + Page 8 (Pushpa title - left) -->
-      <div class="page" id="page4">
+      <!-- SHEET 4: Page 7 (Pratap album - right) + Page 8 (Pushpa activities - left) -->
+      <div class="page" id="sheet4">
         <div class="front">
           <div class="page-content">
             <h2>Pratap Shakha</h2>
 
-            <!-- Example: one slide is an MP4 -->
             <div class="album" data-album="pratap">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="pratap001.JPG" alt="Pratap Shakha media 1" />
+                  <img loading="lazy" src="pratap001.JPG" alt="Pratap Shakha photo 1" />
                 </div>
                 <div class="album-slide">
+                  <!-- If you have a video, set src to an actual .mp4 file -->
                   <video controls preload="metadata">
-                    <source src="pratap003.JPG" type="video/mp4" />
+                    <source src="pratap002.mp4" type="video/mp4" />
                     Your browser does not support MP4 video.
                   </video>
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="pratap_03.jpg" alt="Pratap Shakha media 3" />
+                  <img loading="lazy" src="pratap003.JPG" alt="Pratap Shakha photo 3" />
                 </div>
               </div>
 
@@ -255,18 +261,22 @@
         </div>
 
         <div class="back">
-            <div class="page-content">
-                <h2>Pratap Shakha</h2>
-                <p>Namaste Kids! Welcome to the January edition of your favorite magazine.</p>
-                <p><strong>Focus of the Month:</strong> Inspiring Stories of Sri Krishna.</p>
-                <p>Let us learn, play, and grow with pride.</p>
-                <div class="ornament"></div>
-            </div>
+          <div class="page-content activities">
+            <h2>Pushpa Shakha</h2>
+            <p>Shakha activities and highlights:</p>
+            <ul>
+              <li>Prayer / Shlokas practice</li>
+              <li>Group song / bhajan</li>
+              <li>Games and team-building</li>
+            </ul>
+            <div class="ornament"></div>
+            <div class="page-number">8</div>
+          </div>
         </div>
       </div>
 
-      <!-- SHEET 5: Page 9 (Pushpa album - right) + Page 10 (Saraswati title - left) -->
-      <div class="page" id="page5">
+      <!-- SHEET 5: Page 9 (Pushpa album - right) + Page 10 (Saraswati activities - left) -->
+      <div class="page" id="sheet5">
         <div class="front">
           <div class="page-content">
             <h2>Pushpa Shakha</h2>
@@ -274,13 +284,13 @@
             <div class="album" data-album="pushpa">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="pushpak001.jpg" alt="Pushpa Shakha media 1" />
+                  <img loading="lazy" src="pushpak001.jpg" alt="Pushpa Shakha photo 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="pushpak002.jpg" alt="Pushpa Shakha media 2" />
+                  <img loading="lazy" src="pushpak002.jpg" alt="Pushpa Shakha photo 2" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="pushpak003.jpg" alt="Pushpa Shakha media 3" />
+                  <img loading="lazy" src="pushpak003.jpg" alt="Pushpa Shakha photo 3" />
                 </div>
               </div>
 
@@ -303,18 +313,22 @@
         </div>
 
         <div class="back">
-            <div class="page-content">
-                <h2>Pushpak Shakha</h2>
-                <p>Namaste Kids! Welcome to the January edition of your favorite magazine.</p>
-                <p><strong>Focus of the Month:</strong> Inspiring Stories of Sri Krishna.</p>
-                <p>Let us learn, play, and grow with pride.</p>
-                <div class="ornament"></div>
-            </div>
+          <div class="page-content activities">
+            <h2>Saraswati Shakha</h2>
+            <p>Shakha activities and highlights:</p>
+            <ul>
+              <li>Prayer / Shlokas practice</li>
+              <li>Art / drawing activity</li>
+              <li>Story / discussion</li>
+            </ul>
+            <div class="ornament"></div>
+            <div class="page-number">10</div>
+          </div>
         </div>
       </div>
 
-      <!-- SHEET 6: Page 11 (Saraswati album - right) + Page 12 (Sindhu title - left) -->
-      <div class="page" id="page6">
+      <!-- SHEET 6: Page 11 (Saraswati album - right) + Page 12 (Sindhu activities - left) -->
+      <div class="page" id="sheet6">
         <div class="front">
           <div class="page-content">
             <h2>Saraswati Shakha</h2>
@@ -322,13 +336,16 @@
             <div class="album" data-album="saraswati">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="saraswati001.jpg" alt="Saraswati Shakha media 1" />
+                  <img loading="lazy" src="saraswati001.jpg" alt="Saraswati Shakha photo 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="saraswati002.jpg" alt="Saraswati Shakha media 2" />
+                  <img loading="lazy" src="saraswati002.jpg" alt="Saraswati Shakha photo 2" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="saraswati003.mp4" alt="Saraswati Shakha media 3" />
+                  <video controls preload="metadata">
+                    <source src="saraswati003.mp4" type="video/mp4" />
+                    Your browser does not support MP4 video.
+                  </video>
                 </div>
               </div>
 
@@ -351,18 +368,22 @@
         </div>
 
         <div class="back">
-            <div class="page-content">
-                <h2>Saraswati Shakha</h2>
-                <p>Namaste Kids! Welcome to the January edition of your favorite magazine.</p>
-                <p><strong>Focus of the Month:</strong> Inspiring Stories of Sri Krishna.</p>
-                <p>Let us learn, play, and grow with pride.</p>
-                <div class="ornament"></div>
-            </div>
+          <div class="page-content activities">
+            <h2>Sindhu Shakha</h2>
+            <p>Shakha activities and highlights:</p>
+            <ul>
+              <li>Prayer / Shlokas practice</li>
+              <li>Games and team-building</li>
+              <li>Learning activity</li>
+            </ul>
+            <div class="ornament"></div>
+            <div class="page-number">12</div>
+          </div>
         </div>
       </div>
 
-      <!-- SHEET 7: Page 13 (Sindhu album - right) + Page 14 (Bharatiya title - left) -->
-      <div class="page" id="page7">
+      <!-- SHEET 7: Page 13 (Sindhu album - right) + Page 14 (Bharatiya activities - left) -->
+      <div class="page" id="sheet7">
         <div class="front">
           <div class="page-content">
             <h2>Sindhu Shakha</h2>
@@ -370,13 +391,13 @@
             <div class="album" data-album="sindhu">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="sindhu001.jpg" alt="Sindhu Shakha media 1" />
+                  <img loading="lazy" src="sindhu001.jpg" alt="Sindhu Shakha photo 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="sindhu002.jpg" alt="Sindhu Shakha media 2" />
+                  <img loading="lazy" src="sindhu002.jpg" alt="Sindhu Shakha photo 2" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="sindhu003.jpg" alt="Sindhu Shakha media 3" />
+                  <img loading="lazy" src="sindhu003.jpg" alt="Sindhu Shakha photo 3" />
                 </div>
               </div>
 
@@ -399,18 +420,22 @@
         </div>
 
         <div class="back">
-            <div class="page-content">
-                <h2>Sindhu Shakha</h2>
-                <p>Namaste Kids! Welcome to the January edition of your favorite magazine.</p>
-                <p><strong>Focus of the Month:</strong> Inspiring Stories of Sri Krishna.</p>
-                <p>Let us learn, play, and grow with pride.</p>
-                <div class="ornament"></div>
-            </div>
+          <div class="page-content activities">
+            <h2>Bharatiya Shakha</h2>
+            <p>Shakha activities and highlights:</p>
+            <ul>
+              <li>Prayer / Shlokas practice</li>
+              <li>Yoga / exercises</li>
+              <li>Story / discussion</li>
+            </ul>
+            <div class="ornament"></div>
+            <div class="page-number">14</div>
+          </div>
         </div>
       </div>
 
       <!-- SHEET 8: Page 15 (Bharatiya album - right) + Page 16 (Back cover - left) -->
-      <div class="page" id="page8">
+      <div class="page" id="sheet8">
         <div class="front">
           <div class="page-content">
             <h2>Bharatiya Shakha</h2>
@@ -418,13 +443,13 @@
             <div class="album" data-album="bharatiya">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="Bharati001.jpg" alt="Bharatiya Shakha media 1" />
+                  <img loading="lazy" src="Bharati001.jpg" alt="Bharatiya Shakha photo 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="Bharati002.jpeg" alt="Bharatiya Shakha media 2" />
+                  <img loading="lazy" src="Bharati002.jpeg" alt="Bharatiya Shakha photo 2" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="Bharati003.jpg" alt="Bharatiya Shakha media 3" />
+                  <img loading="lazy" src="Bharati003.jpg" alt="Bharatiya Shakha photo 3" />
                 </div>
               </div>
 
@@ -470,7 +495,6 @@
     </div>
   </div>
 
-  <!-- JS: flipbook navigation + album radio switching -->
   <script>
     // -------- Flipbook (Prev/Next) ----------
     (function () {
@@ -478,12 +502,15 @@
       const prevBtn = document.getElementById("prev-btn");
       const nextBtn = document.getElementById("next-btn");
 
-      let current = 0; // how many sheets have been flipped
+      let current = 0; // number of flipped sheets
 
-      // Ensure z-index stacking is correct even if you add more pages later
-      pages.forEach((p, i) => {
-        p.style.zIndex = String(pages.length - i);
-      });
+      function applyZIndex() {
+        // Key fix: flipped pages must go BEHIND unflipped pages
+        pages.forEach((p, i) => {
+          const flipped = p.classList.contains("flipped");
+          p.style.zIndex = flipped ? String(i + 1) : String(pages.length - i);
+        });
+      }
 
       function updateButtons() {
         prevBtn.disabled = current === 0;
@@ -494,6 +521,7 @@
         if (current >= pages.length) return;
         pages[current].classList.add("flipped");
         current += 1;
+        applyZIndex();
         updateButtons();
       });
 
@@ -501,9 +529,11 @@
         if (current <= 0) return;
         current -= 1;
         pages[current].classList.remove("flipped");
+        applyZIndex();
         updateButtons();
       });
 
+      applyZIndex();
       updateButtons();
     })();
 
@@ -512,9 +542,8 @@
       const albums = Array.from(document.querySelectorAll(".album"));
 
       function stopAllVideos(slideEl) {
-        const vids = slideEl.querySelectorAll("video");
-        vids.forEach(v => {
-          try { v.pause(); v.currentTime = 0; } catch (e) {}
+        slideEl.querySelectorAll("video").forEach(v => {
+          try { v.pause(); v.currentTime = 0; } catch (_) {}
         });
       }
 
@@ -544,8 +573,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
