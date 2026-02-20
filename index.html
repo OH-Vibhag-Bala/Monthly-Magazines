@@ -22,7 +22,7 @@
       opacity: 0.75;
     }
 
-    /* Activities (left pages) */
+    /* Left pages (activities) */
     .activities h2 { margin-top: 0; }
     .activities ul { margin: 8px 0 0; padding-left: 18px; }
     .activities .ornament { margin-top: 14px; }
@@ -82,6 +82,56 @@
       font-size: 0.95rem;
       margin-top: 8px;
     }
+
+    /* ---------------- MOBILE: SINGLE PAGE VIEWER ----------------
+       On small screens, show ONE side at a time (front OR back),
+       and Next/Prev moves page-by-page.
+    */
+    @media (max-width: 768px) {
+      /* Force the book to behave like a single flat page */
+      .magazine-container { width: 100% !important; }
+      .book {
+        width: 100% !important;
+        height: auto !important;
+        perspective: none !important;
+        transform: none !important;
+      }
+
+      /* Override typical flipbook CSS (often uses absolute/3D) */
+      .page {
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
+        transform: none !important;
+        box-shadow: none !important;
+      }
+
+      /* Hide both sides by default; JS will show exactly one side with .side-active */
+      .page .front,
+      .page .back {
+        position: relative !important;
+        width: 100% !important;
+        height: auto !important;
+        transform: none !important;
+        backface-visibility: visible !important;
+        display: none !important;
+      }
+      .page .front.side-active,
+      .page .back.side-active {
+        display: block !important;
+      }
+
+      .album-slides { height: 220px; }
+
+      /* Make controls easier on mobile */
+      .controls {
+        position: sticky;
+        bottom: 0;
+        padding: 10px 0;
+        background: rgba(255,255,255,0.9);
+        backdrop-filter: blur(4px);
+      }
+    }
   </style>
 </head>
 
@@ -123,14 +173,14 @@
             <div class="album" data-album="gajanan">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="gajanan002.jpg" alt="Gajanan Shakha photo 1" />
+                  <img loading="lazy" src="gajanan002.jpg" alt="Gajanan Shakha media 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="gajanan003.jpg" alt="Gajanan Shakha photo 2" />
+                  <img loading="lazy" src="gajanan003.jpg" alt="Gajanan Shakha media 2" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="gajanana001.jpg" alt="Gajanan Shakha photo 3" />
-                  <!-- If this is a typo, rename to gajanan001.jpg -->
+                  <img loading="lazy" src="gajanana001.jpg" alt="Gajanan Shakha media 3" />
+                  <!-- If this filename is a typo, change to gajanan001.jpg -->
                 </div>
               </div>
 
@@ -176,13 +226,13 @@
             <div class="album" data-album="kartikeya">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="karthikeya001.mp4" alt="Kartikeya Shakha photo 1" />
+                  <img loading="lazy" src="karthikeya001.jpg" alt="Kartikeya Shakha media 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="karthikeya002.jpg" alt="Kartikeya Shakha photo 2" />
+                  <img loading="lazy" src="karthikeya002.jpg" alt="Kartikeya Shakha media 2" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="karthikeya003.jpg" alt="Kartikeya Shakha photo 3" />
+                  <img loading="lazy" src="karthikeya003.jpg" alt="Kartikeya Shakha media 3" />
                 </div>
               </div>
 
@@ -228,17 +278,17 @@
             <div class="album" data-album="pratap">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="pratap001.JPG" alt="Pratap Shakha photo 1" />
+                  <img loading="lazy" src="pratap001.jpg" alt="Pratap Shakha media 1" />
                 </div>
                 <div class="album-slide">
-                  <!-- If you have a video, set src to an actual .mp4 file -->
+                  <!-- Optional MP4 (replace with a real .mp4 if you have it) -->
                   <video controls preload="metadata">
                     <source src="pratap002.mp4" type="video/mp4" />
                     Your browser does not support MP4 video.
                   </video>
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="pratap003.JPG" alt="Pratap Shakha photo 3" />
+                  <img loading="lazy" src="pratap003.jpg" alt="Pratap Shakha media 3" />
                 </div>
               </div>
 
@@ -284,13 +334,13 @@
             <div class="album" data-album="pushpa">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="pushpak001.jpg" alt="Pushpa Shakha photo 1" />
+                  <img loading="lazy" src="pushpa001.jpg" alt="Pushpa Shakha media 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="pushpak002.jpg" alt="Pushpa Shakha photo 2" />
+                  <img loading="lazy" src="pushpa002.jpg" alt="Pushpa Shakha media 2" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="pushpak003.jpg" alt="Pushpa Shakha photo 3" />
+                  <img loading="lazy" src="pushpa003.jpg" alt="Pushpa Shakha media 3" />
                 </div>
               </div>
 
@@ -336,10 +386,10 @@
             <div class="album" data-album="saraswati">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="saraswati001.jpg" alt="Saraswati Shakha photo 1" />
+                  <img loading="lazy" src="saraswati001.jpg" alt="Saraswati Shakha media 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="saraswati002.jpg" alt="Saraswati Shakha photo 2" />
+                  <img loading="lazy" src="saraswati002.jpg" alt="Saraswati Shakha media 2" />
                 </div>
                 <div class="album-slide">
                   <video controls preload="metadata">
@@ -391,13 +441,13 @@
             <div class="album" data-album="sindhu">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="sindhu001.jpg" alt="Sindhu Shakha photo 1" />
+                  <img loading="lazy" src="sindhu001.jpg" alt="Sindhu Shakha media 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="sindhu002.jpg" alt="Sindhu Shakha photo 2" />
+                  <img loading="lazy" src="sindhu002.jpg" alt="Sindhu Shakha media 2" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="sindhu003.jpg" alt="Sindhu Shakha photo 3" />
+                  <img loading="lazy" src="sindhu003.jpg" alt="Sindhu Shakha media 3" />
                 </div>
               </div>
 
@@ -443,13 +493,13 @@
             <div class="album" data-album="bharatiya">
               <div class="album-slides">
                 <div class="album-slide active">
-                  <img loading="lazy" src="Bharati001.jpg" alt="Bharatiya Shakha photo 1" />
+                  <img loading="lazy" src="Bharati001.jpg" alt="Bharatiya Shakha media 1" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="Bharati002.jpeg" alt="Bharatiya Shakha photo 2" />
+                  <img loading="lazy" src="Bharati002.jpeg" alt="Bharatiya Shakha media 2" />
                 </div>
                 <div class="album-slide">
-                  <img loading="lazy" src="Bharati003.jpg" alt="Bharatiya Shakha photo 3" />
+                  <img loading="lazy" src="Bharati003.jpg" alt="Bharatiya Shakha media 3" />
                 </div>
               </div>
 
@@ -496,56 +546,17 @@
   </div>
 
   <script>
-    // -------- Flipbook (Prev/Next) ----------
-    (function () {
-      const pages = Array.from(document.querySelectorAll(".book .page"));
-      const prevBtn = document.getElementById("prev-btn");
-      const nextBtn = document.getElementById("next-btn");
-
-      let current = 0; // number of flipped sheets
-
-      function applyZIndex() {
-        // Key fix: flipped pages must go BEHIND unflipped pages
-        pages.forEach((p, i) => {
-          const flipped = p.classList.contains("flipped");
-          p.style.zIndex = flipped ? String(i + 1) : String(pages.length - i);
-        });
-      }
-
-      function updateButtons() {
-        prevBtn.disabled = current === 0;
-        nextBtn.disabled = current === pages.length;
-      }
-
-      nextBtn.addEventListener("click", () => {
-        if (current >= pages.length) return;
-        pages[current].classList.add("flipped");
-        current += 1;
-        applyZIndex();
-        updateButtons();
+    // Utility: stop/reset videos inside an element
+    function stopVideos(root) {
+      if (!root) return;
+      root.querySelectorAll("video").forEach(v => {
+        try { v.pause(); v.currentTime = 0; } catch (_) {}
       });
+    }
 
-      prevBtn.addEventListener("click", () => {
-        if (current <= 0) return;
-        current -= 1;
-        pages[current].classList.remove("flipped");
-        applyZIndex();
-        updateButtons();
-      });
-
-      applyZIndex();
-      updateButtons();
-    })();
-
-    // -------- Albums (3 radios -> show slide 1/2/3) ----------
-    (function () {
+    // Albums (3 radios -> show slide 1/2/3)
+    (function initAlbums() {
       const albums = Array.from(document.querySelectorAll(".album"));
-
-      function stopAllVideos(slideEl) {
-        slideEl.querySelectorAll("video").forEach(v => {
-          try { v.pause(); v.currentTime = 0; } catch (_) {}
-        });
-      }
 
       albums.forEach(album => {
         const radios = Array.from(album.querySelectorAll('input[type="radio"]'));
@@ -554,7 +565,7 @@
 
         function show(index) {
           slides.forEach((s, i) => {
-            if (i !== index) stopAllVideos(s);
+            if (i !== index) stopVideos(s);
             s.classList.toggle("active", i === index);
           });
           dots.forEach((d, i) => d.classList.toggle("active", i === index));
@@ -570,7 +581,125 @@
         show(initial);
       });
     })();
+
+    // Flipbook navigation:
+    // - Desktop: flip by SHEET (spread view)
+    // - Mobile: show ONE SIDE at a time (page-by-page)
+    (function initNavigation() {
+      const pages = Array.from(document.querySelectorAll(".book .page"));
+      const prevBtn = document.getElementById("prev-btn");
+      const nextBtn = document.getElementById("next-btn");
+      const mq = window.matchMedia("(max-width: 768px)");
+
+      let desktopCurrent = 0; // flipped sheets count
+      let mobileIndex = 0;    // virtual side index
+      let virtualSides = [];
+
+      function buildVirtualSides() {
+        virtualSides = [];
+        pages.forEach(p => {
+          virtualSides.push({ sheet: p, side: "front" });
+          virtualSides.push({ sheet: p, side: "back" });
+        });
+      }
+
+      // Desktop z-index fix: flipped sheets go behind
+      function applyDesktopZIndex() {
+        pages.forEach((p, i) => {
+          const flipped = p.classList.contains("flipped");
+          p.style.zIndex = flipped ? String(i + 1) : String(pages.length - i);
+        });
+      }
+
+      function setDesktopButtons() {
+        prevBtn.disabled = desktopCurrent === 0;
+        nextBtn.disabled = desktopCurrent === pages.length;
+      }
+
+      function setMobileButtons() {
+        prevBtn.disabled = mobileIndex === 0;
+        nextBtn.disabled = mobileIndex === virtualSides.length - 1;
+      }
+
+      function clearMobileSideVisibility() {
+        pages.forEach(p => {
+          p.classList.remove("flipped");
+          const f = p.querySelector(".front");
+          const b = p.querySelector(".back");
+          if (f) f.classList.remove("side-active");
+          if (b) b.classList.remove("side-active");
+        });
+      }
+
+      function renderMobile() {
+        clearMobileSideVisibility();
+        const v = virtualSides[mobileIndex];
+        const sideEl = v.sheet.querySelector(v.side === "front" ? ".front" : ".back");
+        if (sideEl) sideEl.classList.add("side-active");
+        setMobileButtons();
+      }
+
+      function initDesktopMode() {
+        // reset
+        clearMobileSideVisibility();
+        pages.forEach(p => p.classList.remove("flipped"));
+        desktopCurrent = 0;
+
+        prevBtn.onclick = () => {
+          if (desktopCurrent <= 0) return;
+          desktopCurrent -= 1;
+          pages[desktopCurrent].classList.remove("flipped");
+          applyDesktopZIndex();
+          setDesktopButtons();
+        };
+
+        nextBtn.onclick = () => {
+          if (desktopCurrent >= pages.length) return;
+          pages[desktopCurrent].classList.add("flipped");
+          desktopCurrent += 1;
+          applyDesktopZIndex();
+          setDesktopButtons();
+        };
+
+        applyDesktopZIndex();
+        setDesktopButtons();
+      }
+
+      function initMobileMode() {
+        // reset
+        pages.forEach(p => p.classList.remove("flipped"));
+        buildVirtualSides();
+        mobileIndex = 0;
+        renderMobile();
+
+        prevBtn.onclick = () => {
+          if (mobileIndex <= 0) return;
+          const cur = virtualSides[mobileIndex];
+          stopVideos(cur.sheet.querySelector(cur.side === "front" ? ".front" : ".back"));
+          mobileIndex -= 1;
+          renderMobile();
+        };
+
+        nextBtn.onclick = () => {
+          if (mobileIndex >= virtualSides.length - 1) return;
+          const cur = virtualSides[mobileIndex];
+          stopVideos(cur.sheet.querySelector(cur.side === "front" ? ".front" : ".back"));
+          mobileIndex += 1;
+          renderMobile();
+        };
+      }
+
+      function initByViewport() {
+        if (mq.matches) initMobileMode();
+        else initDesktopMode();
+      }
+
+      // Re-init on resize/breakpoint change
+      if (mq.addEventListener) mq.addEventListener("change", initByViewport);
+      else mq.addListener(initByViewport);
+
+      initByViewport();
+    })();
   </script>
 </body>
 </html>
-
