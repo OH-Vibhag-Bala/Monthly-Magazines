@@ -1,251 +1,540 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HSS - Ohio Vibhag Bala Gana Monthly Magazine - Jan -2026</title>
-    <link rel="stylesheet" href="style.css">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Laila:wght@400;700&family=Mukta:wght@300;400;700&family=Rozha+One&display=swap"
-        rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HSS - Ohio Vibhag Bala Gana Monthly Magazine - Jan - 2026</title>
 
-        <!-- Album pagination CSS (kept here so you don't have to edit style.css) -->
-    <style>
-        /* Album widget */
-        .album {
-            margin-top: 12px;
-        }
+  <link rel="stylesheet" href="style.css" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Laila:wght@400;700&family=Mukta:wght@300;400;700&family=Rozha+One&display=swap"
+    rel="stylesheet"
+  />
 
-        .album input[type="radio"] {
-            position: absolute;
-            opacity: 0;
-            pointer-events: none;
-        }
+  <!-- Album CSS (generic; works for every shakha album) -->
+  <style>
+    .page-content { position: relative; }
 
-        .album-slides {
-            position: relative;
-            width: 100%;
-            height: 260px;
-            border-radius: 12px;
-            overflow: hidden;
-        }
+    .page-number {
+      position: absolute;
+      bottom: 10px;
+      right: 12px;
+      font-size: 12px;
+      opacity: 0.75;
+    }
 
-        .album-slide {
-            position: absolute;
-            inset: 0;
-            display: none;
-            align-items: center;
-            justify-content: center;
-        }
+    /* Title-only left pages */
+    .title-only {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 320px;
+      text-align: center;
+    }
+    .title-only h2 { margin: 0; }
 
-        .album-slide img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
+    /* Album widget */
+    .album { margin-top: 12px; }
+    .album-slides {
+      position: relative;
+      width: 100%;
+      height: 260px;
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .album-slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .album-slide.active { display: flex; }
 
-        /* Show the selected slide */
-        #gajanan-1:checked~.album-slides .s1 {
-            display: flex;
-        }
+    .album-slide img,
+    .album-slide video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
 
-        #gajanan-2:checked~.album-slides .s2 {
-            display: flex;
-        }
+    .album-pagination {
+      display: flex;
+      gap: 10px;
+      justify-content: center;
+      margin-top: 10px;
+      align-items: center;
+    }
 
-        #gajanan-3:checked~.album-slides .s3 {
-            display: flex;
-        }
+    .album-pagination input[type="radio"] {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+    }
 
-        .album-pagination {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 10px;
-        }
+    .album-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      border: 2px solid #333;
+      cursor: pointer;
+      display: inline-block;
+    }
+    .album-dot.active { background: #333; }
 
-        .album-pagination label {
-            width: 12px;
-            height: 12px;
-            border-radius: 999px;
-            border: 2px solid #333;
-            cursor: pointer;
-            display: inline-block;
-        }
-
-        #gajanan-1:checked~.album-pagination label[for="gajanan-1"],
-        #gajanan-2:checked~.album-pagination label[for="gajanan-2"],
-        #gajanan-3:checked~.album-pagination label[for="gajanan-3"] {
-            background: #333;
-        }
-
-        .album-caption {
-            text-align: center;
-            font-size: 0.95rem;
-            margin-top: 8px;
-        }
-    </style>
-</head>
+    .album-caption {
+      text-align: center;
+      font-size: 0.95rem;
+      margin-top: 8px;
+    }
+  </style>
 </head>
 
 <body>
+  <div class="magazine-container">
+    <div class="book" id="book">
 
-    <div class="magazine-container">
-        <div class="book" id="book">
-            <!-- Page 1: Front Cover -->
-            <div class="page" id="page1" style="z-index: 6;">
-                <div class="front">
-                    <div class="cover-design">
-                        <!-- HSS Logo concept or text -->
-                        <div class="hss-branding">HSS Balagokulam</div>
-                        <img src="cover_art.png" alt="Magazine Cover" class="cover-img">
-                        <h1 class="magazine-title">HSS - Ohio Vibhag Bala Gana Monthly Magazine - Jan -2026</h1>
-                        <p class="edition-text">An Initiative of HSSUS.ORG</p>
-                    </div>
+      <!-- SHEET 1: Page 1 (Cover) + Page 2 (Gajanan title - left) -->
+      <div class="page" id="page1">
+        <div class="front">
+          <div class="cover-design">
+            <div class="hss-branding">HSS Balagokulam</div>
+            <img src="cover_art.png" alt="Magazine Cover" class="cover-img" />
+            <h1 class="magazine-title">HSS - Ohio Vibhag Bala Gana Monthly Magazine - Jan - 2026</h1>
+            <p class="edition-text">An Initiative of HSSUS.ORG</p>
+          </div>
+        </div>
+        <div class="back">
+          <div class="page-content title-only">
+            <div>
+              <h2>Gajanan Shakha</h2>
+            </div>
+            <div class="page-number">2</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHEET 2: Page 3 (Gajanan album - right) + Page 4 (Kartikeya title - left) -->
+      <div class="page" id="page2">
+        <div class="front">
+          <div class="page-content">
+            <h2>Gajanan Shakha</h2>
+
+            <!-- Replace src with your real image/video URLs or local files -->
+            <div class="album" data-album="gajanan">
+              <div class="album-slides">
+                <div class="album-slide active">
+                  <img loading="lazy" src="gajanan_01.jpg" alt="Gajanan Shakha media 1" />
                 </div>
-                <div class="back">
-                    <div class="page-content">
-                        <h2>Gajanan Shakha</h2>
-                        <p>Namaste Kids! Welcome to the January edition of your favorite magazine.</p>
-                        <p><strong>Focus of the Month:</strong> Inspiring Stories of Sri Krishna.</p>
-                        <p>Let us learn, play, and grow with pride.</p>
-                        <div class="ornament"></div>
-                    </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="gajanan_02.jpg" alt="Gajanan Shakha media 2" />
                 </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="gajanan_03.jpg" alt="Gajanan Shakha media 3" />
+                  <!-- OR: <video controls preload="metadata"><source src="gajanan_03.mp4" type="video/mp4" /></video> -->
+                </div>
+              </div>
+
+              <div class="album-pagination" role="radiogroup" aria-label="Gajanan Shakha album">
+                <input type="radio" id="gajanan-r1" name="album-gajanan" checked />
+                <label class="album-dot active" for="gajanan-r1" aria-label="Slide 1"></label>
+
+                <input type="radio" id="gajanan-r2" name="album-gajanan" />
+                <label class="album-dot" for="gajanan-r2" aria-label="Slide 2"></label>
+
+                <input type="radio" id="gajanan-r3" name="album-gajanan" />
+                <label class="album-dot" for="gajanan-r3" aria-label="Slide 3"></label>
+              </div>
+
+              <div class="album-caption">Tap the dots to switch photos/videos</div>
             </div>
 
-            <!-- Page 5: RIGHT side page (album) + Back Cover moved here -->
-            <div class="page" id="page5" style="z-index: 6;">
-                <div class="front">
-                    <div class="page-content">
-                        <h2>Gajanan shakha</h2>
-                        <!-- IMPORTANT: Google Drive /view links won't work for <img>.
-                             Use direct view links like: https://drive.google.com/uc?export=view&id=FILE_ID
-                             Files must be shared publicly. -->
-                        <div class="album">
-                            <input type="radio" name="gajanan-album" id="gajanan-1" checked>
-                            <input type="radio" name="gajanan-album" id="gajanan-2">
-                            <input type="radio" name="gajanan-album" id="gajanan-3">
-
-                            <div class="album-slides">
-                                <div class="album-slide s1">
-                                    <img loading="lazy"
-                                        src="gajanana001.jpg"
-                                        alt="Gajanan Shakha Photo 1">
-                                </div>
-                                <div class="album-slide s2">
-                                    <img loading="lazy"
-                                        src="gajanan002.jpg"
-                                        alt="Gajanan Shakha Photo 2">
-                                </div>
-                                <div class="album-slide s3">
-                                    <img loading="lazy"
-                                        src="gajanan003.jpg"
-                                        alt="Gajanan Shakha Photo 3">
-                                </div>
-                            </div>
-
-                            <div class="album-pagination">
-                                <label for="gajanan-1" aria-label="Photo 1"></label>
-                                <label for="gajanan-2" aria-label="Photo 2"></label>
-                                <label for="gajanan-3" aria-label="Photo 3"></label>
-                            </div>
-                            <div class="album-caption">Tap the dots to switch photos</div>
-
-                        </div>
-                    </div>
-                </div>
-                <div class="back">
-                    <div class="page-content">
-                        <h2>Melodies & Shlokas</h2>
-                        <div class="audio-container">
-                            <p>Practice your daily Shlokas:</p>
-                            <!-- Placeholder for Audio -->
-                            <audio controls>
-
-                                <source
-                                    src="https://drive.google.com/file/d/1HgTp57ea-Y94omo0zv6Up4wCpWDgwPV-/view?usp=sharing"
-                                    type="audio/mpeg">
-                                Your browser does not support the audio element.
-                            </audio>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Page 3: Gallery -->
-            <div class="page" id="page3" style="z-index: 4;">
-                <div class="front">
-                    <div class="page-content">
-                        <h2>Gajanan shakha</h2>
-                        <!-- IMPORTANT: Google Drive /view links won't work for <img>.
-                             Use direct view links like: https://drive.google.com/uc?export=view&id=FILE_ID
-                             Files must be shared publicly. -->
-                        <div class="album">
-                            <input type="radio" name="gajanan-album" id="gajanan-1" checked>
-                            <input type="radio" name="gajanan-album" id="gajanan-2">
-                            <input type="radio" name="gajanan-album" id="gajanan-3">
-
-                            <div class="album-slides">
-                                <div class="album-slide s1">
-                                    <img loading="lazy"
-                                        src="karthikeya002.jpg"
-                                        alt="Karthikeya Shakha Photo 1">
-                                </div>
-                                <div class="album-slide s2">
-                                    <img loading="lazy"
-                                        src="karthikeya002.jpg"
-                                        alt="Karthikeya Shakha Photo 2">
-                                </div>
-                                <div class="album-slide s3">
-                                    <img loading="lazy"
-                                        src="karthikeya003.jpg"
-                                        alt="Karthikeya Shakha Photo 3">
-                                </div>
-                            </div>
-
-                            <div class="album-pagination">
-                                <label for="gajanan-1" aria-label="Photo 1"></label>
-                                <label for="gajanan-2" aria-label="Photo 2"></label>
-                                <label for="gajanan-3" aria-label="Photo 3"></label>
-                            </div>
-                            <div class="album-caption">Tap the dots to switch photos</div>
-
-                        </div>
-                    </div>
-                </div>
-                <div class="back">
-                    <div class="page-content back-cover">
-                        <h2>HSS Balagokulam</h2>
-                        <p><em>To facilitate children to appreciate, learn, and practice Hindu way of life.</em></p>
-                        <hr>
-                        <p><strong>Ohio Vibhag</strong></p>
-                        <p>Visit us: <a href="https://balagokulam.hssus.org/" target="_blank">balagokulam.hssus.org</a>
-                        </p>
-                        <p>&copy; 2026 HSSUS.ORG</p>
-                    </div>
-                </div>
-            </div>
+            <div class="page-number">3</div>
+          </div>
         </div>
 
-        <div class="controls">
-            <button id="prev-btn">Previous</button>
-            <button id="next-btn">Next</button>
+        <div class="back">
+          <div class="page-content title-only">
+            <div>
+              <h2>Kartikeya Shakha</h2>
+            </div>
+            <div class="page-number">4</div>
+          </div>
         </div>
+      </div>
+
+      <!-- SHEET 3: Page 5 (Kartikeya album - right) + Page 6 (Pratap title - left) -->
+      <div class="page" id="page3">
+        <div class="front">
+          <div class="page-content">
+            <h2>Kartikeya Shakha</h2>
+
+            <div class="album" data-album="kartikeya">
+              <div class="album-slides">
+                <div class="album-slide active">
+                  <img loading="lazy" src="kartikeya_01.jpg" alt="Kartikeya Shakha media 1" />
+                </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="kartikeya_02.jpg" alt="Kartikeya Shakha media 2" />
+                </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="kartikeya_03.jpg" alt="Kartikeya Shakha media 3" />
+                </div>
+              </div>
+
+              <div class="album-pagination" role="radiogroup" aria-label="Kartikeya Shakha album">
+                <input type="radio" id="kartikeya-r1" name="album-kartikeya" checked />
+                <label class="album-dot active" for="kartikeya-r1" aria-label="Slide 1"></label>
+
+                <input type="radio" id="kartikeya-r2" name="album-kartikeya" />
+                <label class="album-dot" for="kartikeya-r2" aria-label="Slide 2"></label>
+
+                <input type="radio" id="kartikeya-r3" name="album-kartikeya" />
+                <label class="album-dot" for="kartikeya-r3" aria-label="Slide 3"></label>
+              </div>
+
+              <div class="album-caption">Tap the dots to switch photos/videos</div>
+            </div>
+
+            <div class="page-number">5</div>
+          </div>
+        </div>
+
+        <div class="back">
+          <div class="page-content title-only">
+            <div>
+              <h2>Pratap Shakha</h2>
+            </div>
+            <div class="page-number">6</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHEET 4: Page 7 (Pratap album - right) + Page 8 (Pushpa title - left) -->
+      <div class="page" id="page4">
+        <div class="front">
+          <div class="page-content">
+            <h2>Pratap Shakha</h2>
+
+            <!-- Example: one slide is an MP4 -->
+            <div class="album" data-album="pratap">
+              <div class="album-slides">
+                <div class="album-slide active">
+                  <img loading="lazy" src="pratap_01.jpg" alt="Pratap Shakha media 1" />
+                </div>
+                <div class="album-slide">
+                  <video controls preload="metadata">
+                    <source src="pratap_02.mp4" type="video/mp4" />
+                    Your browser does not support MP4 video.
+                  </video>
+                </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="pratap_03.jpg" alt="Pratap Shakha media 3" />
+                </div>
+              </div>
+
+              <div class="album-pagination" role="radiogroup" aria-label="Pratap Shakha album">
+                <input type="radio" id="pratap-r1" name="album-pratap" checked />
+                <label class="album-dot active" for="pratap-r1" aria-label="Slide 1"></label>
+
+                <input type="radio" id="pratap-r2" name="album-pratap" />
+                <label class="album-dot" for="pratap-r2" aria-label="Slide 2"></label>
+
+                <input type="radio" id="pratap-r3" name="album-pratap" />
+                <label class="album-dot" for="pratap-r3" aria-label="Slide 3"></label>
+              </div>
+
+              <div class="album-caption">Tap the dots to switch photos/videos</div>
+            </div>
+
+            <div class="page-number">7</div>
+          </div>
+        </div>
+
+        <div class="back">
+          <div class="page-content title-only">
+            <div>
+              <h2>Pushpa Shakha</h2>
+            </div>
+            <div class="page-number">8</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHEET 5: Page 9 (Pushpa album - right) + Page 10 (Saraswati title - left) -->
+      <div class="page" id="page5">
+        <div class="front">
+          <div class="page-content">
+            <h2>Pushpa Shakha</h2>
+
+            <div class="album" data-album="pushpa">
+              <div class="album-slides">
+                <div class="album-slide active">
+                  <img loading="lazy" src="pushpa_01.jpg" alt="Pushpa Shakha media 1" />
+                </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="pushpa_02.jpg" alt="Pushpa Shakha media 2" />
+                </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="pushpa_03.jpg" alt="Pushpa Shakha media 3" />
+                </div>
+              </div>
+
+              <div class="album-pagination" role="radiogroup" aria-label="Pushpa Shakha album">
+                <input type="radio" id="pushpa-r1" name="album-pushpa" checked />
+                <label class="album-dot active" for="pushpa-r1" aria-label="Slide 1"></label>
+
+                <input type="radio" id="pushpa-r2" name="album-pushpa" />
+                <label class="album-dot" for="pushpa-r2" aria-label="Slide 2"></label>
+
+                <input type="radio" id="pushpa-r3" name="album-pushpa" />
+                <label class="album-dot" for="pushpa-r3" aria-label="Slide 3"></label>
+              </div>
+
+              <div class="album-caption">Tap the dots to switch photos/videos</div>
+            </div>
+
+            <div class="page-number">9</div>
+          </div>
+        </div>
+
+        <div class="back">
+          <div class="page-content title-only">
+            <div>
+              <h2>Saraswati Shakha</h2>
+            </div>
+            <div class="page-number">10</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHEET 6: Page 11 (Saraswati album - right) + Page 12 (Sindhu title - left) -->
+      <div class="page" id="page6">
+        <div class="front">
+          <div class="page-content">
+            <h2>Saraswati Shakha</h2>
+
+            <div class="album" data-album="saraswati">
+              <div class="album-slides">
+                <div class="album-slide active">
+                  <img loading="lazy" src="saraswati_01.jpg" alt="Saraswati Shakha media 1" />
+                </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="saraswati_02.jpg" alt="Saraswati Shakha media 2" />
+                </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="saraswati_03.jpg" alt="Saraswati Shakha media 3" />
+                </div>
+              </div>
+
+              <div class="album-pagination" role="radiogroup" aria-label="Saraswati Shakha album">
+                <input type="radio" id="saraswati-r1" name="album-saraswati" checked />
+                <label class="album-dot active" for="saraswati-r1" aria-label="Slide 1"></label>
+
+                <input type="radio" id="saraswati-r2" name="album-saraswati" />
+                <label class="album-dot" for="saraswati-r2" aria-label="Slide 2"></label>
+
+                <input type="radio" id="saraswati-r3" name="album-saraswati" />
+                <label class="album-dot" for="saraswati-r3" aria-label="Slide 3"></label>
+              </div>
+
+              <div class="album-caption">Tap the dots to switch photos/videos</div>
+            </div>
+
+            <div class="page-number">11</div>
+          </div>
+        </div>
+
+        <div class="back">
+          <div class="page-content title-only">
+            <div>
+              <h2>Sindhu Shakha</h2>
+            </div>
+            <div class="page-number">12</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHEET 7: Page 13 (Sindhu album - right) + Page 14 (Bharatiya title - left) -->
+      <div class="page" id="page7">
+        <div class="front">
+          <div class="page-content">
+            <h2>Sindhu Shakha</h2>
+
+            <div class="album" data-album="sindhu">
+              <div class="album-slides">
+                <div class="album-slide active">
+                  <img loading="lazy" src="sindhu_01.jpg" alt="Sindhu Shakha media 1" />
+                </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="sindhu_02.jpg" alt="Sindhu Shakha media 2" />
+                </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="sindhu_03.jpg" alt="Sindhu Shakha media 3" />
+                </div>
+              </div>
+
+              <div class="album-pagination" role="radiogroup" aria-label="Sindhu Shakha album">
+                <input type="radio" id="sindhu-r1" name="album-sindhu" checked />
+                <label class="album-dot active" for="sindhu-r1" aria-label="Slide 1"></label>
+
+                <input type="radio" id="sindhu-r2" name="album-sindhu" />
+                <label class="album-dot" for="sindhu-r2" aria-label="Slide 2"></label>
+
+                <input type="radio" id="sindhu-r3" name="album-sindhu" />
+                <label class="album-dot" for="sindhu-r3" aria-label="Slide 3"></label>
+              </div>
+
+              <div class="album-caption">Tap the dots to switch photos/videos</div>
+            </div>
+
+            <div class="page-number">13</div>
+          </div>
+        </div>
+
+        <div class="back">
+          <div class="page-content title-only">
+            <div>
+              <h2>Bharatiya Shakha</h2>
+            </div>
+            <div class="page-number">14</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SHEET 8: Page 15 (Bharatiya album - right) + Page 16 (Back cover - left) -->
+      <div class="page" id="page8">
+        <div class="front">
+          <div class="page-content">
+            <h2>Bharatiya Shakha</h2>
+
+            <div class="album" data-album="bharatiya">
+              <div class="album-slides">
+                <div class="album-slide active">
+                  <img loading="lazy" src="bharatiya_01.jpg" alt="Bharatiya Shakha media 1" />
+                </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="bharatiya_02.jpg" alt="Bharatiya Shakha media 2" />
+                </div>
+                <div class="album-slide">
+                  <img loading="lazy" src="bharatiya_03.jpg" alt="Bharatiya Shakha media 3" />
+                </div>
+              </div>
+
+              <div class="album-pagination" role="radiogroup" aria-label="Bharatiya Shakha album">
+                <input type="radio" id="bharatiya-r1" name="album-bharatiya" checked />
+                <label class="album-dot active" for="bharatiya-r1" aria-label="Slide 1"></label>
+
+                <input type="radio" id="bharatiya-r2" name="album-bharatiya" />
+                <label class="album-dot" for="bharatiya-r2" aria-label="Slide 2"></label>
+
+                <input type="radio" id="bharatiya-r3" name="album-bharatiya" />
+                <label class="album-dot" for="bharatiya-r3" aria-label="Slide 3"></label>
+              </div>
+
+              <div class="album-caption">Tap the dots to switch photos/videos</div>
+            </div>
+
+            <div class="page-number">15</div>
+          </div>
+        </div>
+
+        <div class="back">
+          <div class="page-content back-cover">
+            <h2>HSS Balagokulam</h2>
+            <p><em>To facilitate children to appreciate, learn, and practice Hindu way of life.</em></p>
+            <hr />
+            <p><strong>Ohio Vibhag</strong></p>
+            <p>
+              Visit us:
+              <a href="https://balagokulam.hssus.org/" target="_blank" rel="noreferrer">balagokulam.hssus.org</a>
+            </p>
+            <p>&copy; 2026 HSSUS.ORG</p>
+            <div class="page-number">16</div>
+          </div>
+        </div>
+      </div>
+
     </div>
 
-    <script src="script.js"></script>
+    <div class="controls">
+      <button id="prev-btn">Previous</button>
+      <button id="next-btn">Next</button>
+    </div>
+  </div>
+
+  <!-- JS: flipbook navigation + album radio switching -->
+  <script>
+    // -------- Flipbook (Prev/Next) ----------
+    (function () {
+      const pages = Array.from(document.querySelectorAll(".book .page"));
+      const prevBtn = document.getElementById("prev-btn");
+      const nextBtn = document.getElementById("next-btn");
+
+      let current = 0; // how many sheets have been flipped
+
+      // Ensure z-index stacking is correct even if you add more pages later
+      pages.forEach((p, i) => {
+        p.style.zIndex = String(pages.length - i);
+      });
+
+      function updateButtons() {
+        prevBtn.disabled = current === 0;
+        nextBtn.disabled = current === pages.length;
+      }
+
+      nextBtn.addEventListener("click", () => {
+        if (current >= pages.length) return;
+        pages[current].classList.add("flipped");
+        current += 1;
+        updateButtons();
+      });
+
+      prevBtn.addEventListener("click", () => {
+        if (current <= 0) return;
+        current -= 1;
+        pages[current].classList.remove("flipped");
+        updateButtons();
+      });
+
+      updateButtons();
+    })();
+
+    // -------- Albums (3 radios -> show slide 1/2/3) ----------
+    (function () {
+      const albums = Array.from(document.querySelectorAll(".album"));
+
+      function stopAllVideos(slideEl) {
+        const vids = slideEl.querySelectorAll("video");
+        vids.forEach(v => {
+          try { v.pause(); v.currentTime = 0; } catch (e) {}
+        });
+      }
+
+      albums.forEach(album => {
+        const radios = Array.from(album.querySelectorAll('input[type="radio"]'));
+        const dots = Array.from(album.querySelectorAll(".album-dot"));
+        const slides = Array.from(album.querySelectorAll(".album-slide"));
+
+        function show(index) {
+          slides.forEach((s, i) => {
+            if (i !== index) stopAllVideos(s);
+            s.classList.toggle("active", i === index);
+          });
+          dots.forEach((d, i) => d.classList.toggle("active", i === index));
+        }
+
+        radios.forEach((r, i) => {
+          r.addEventListener("change", () => {
+            if (r.checked) show(i);
+          });
+        });
+
+        const initial = Math.max(0, radios.findIndex(r => r.checked));
+        show(initial);
+      });
+    })();
+  </script>
 </body>
-
 </html>
-
-
-
-
-
-
-
-
-
