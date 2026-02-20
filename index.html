@@ -83,13 +83,25 @@
       margin-top: 8px;
     }
 
-    /* ---------------- MOBILE: SINGLE PAGE VIEWER ----------------
-       On small screens, show ONE side at a time (front OR back),
-       and Next/Prev moves page-by-page.
-    */
+    /* Controls (default / desktop) */
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      margin-top: 14px;
+    }
+    .controls button {
+      padding: 10px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    /* ---------------- MOBILE: PAGE-BY-PAGE VIEW + FIXED BOTTOM CONTROLS ---------------- */
     @media (max-width: 768px) {
-      /* Force the book to behave like a single flat page */
-      .magazine-container { width: 100% !important; }
+      /* Prevent the fixed controls from covering content */
+      .magazine-container { padding-bottom: 84px !important; }
+
+      /* Single-page viewer behavior (override flipbook CSS that may be in style.css) */
       .book {
         width: 100% !important;
         height: auto !important;
@@ -97,7 +109,6 @@
         transform: none !important;
       }
 
-      /* Override typical flipbook CSS (often uses absolute/3D) */
       .page {
         position: relative !important;
         width: 100% !important;
@@ -106,7 +117,7 @@
         box-shadow: none !important;
       }
 
-      /* Hide both sides by default; JS will show exactly one side with .side-active */
+      /* Hide both sides by default; JS will show exactly one with .side-active */
       .page .front,
       .page .back {
         position: relative !important;
@@ -116,6 +127,7 @@
         backface-visibility: visible !important;
         display: none !important;
       }
+
       .page .front.side-active,
       .page .back.side-active {
         display: block !important;
@@ -123,13 +135,29 @@
 
       .album-slides { height: 220px; }
 
-      /* Make controls easier on mobile */
+      /* FIX: controls must not float in the middle (override style.css aggressively) */
       .controls {
-        position: sticky;
-        bottom: 0;
-        padding: 10px 0;
-        background: rgba(255,255,255,0.9);
-        backdrop-filter: blur(4px);
+        position: fixed !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        margin: 0 !important;
+        padding: 10px 12px !important;
+        display: flex !important;
+        gap: 12px !important;
+        justify-content: space-between !important;
+        background: rgba(255,255,255,0.92) !important;
+        backdrop-filter: blur(6px);
+        z-index: 9999 !important;
+        box-shadow: 0 -6px 18px rgba(0,0,0,0.08);
+      }
+
+      .controls button {
+        flex: 1 1 0 !important;
+        width: 50% !important;
+        font-size: 16px !important;
+        padding: 12px 10px !important;
+        border-radius: 12px !important;
       }
     }
   </style>
@@ -180,7 +208,6 @@
                 </div>
                 <div class="album-slide">
                   <img loading="lazy" src="gajanana001.jpg" alt="Gajanan Shakha media 3" />
-                  <!-- If this filename is a typo, change to gajanan001.jpg -->
                 </div>
               </div>
 
@@ -281,7 +308,6 @@
                   <img loading="lazy" src="pratap001.jpg" alt="Pratap Shakha media 1" />
                 </div>
                 <div class="album-slide">
-                  <!-- Optional MP4 (replace with a real .mp4 if you have it) -->
                   <video controls preload="metadata">
                     <source src="pratap002.mp4" type="video/mp4" />
                     Your browser does not support MP4 video.
@@ -540,13 +566,12 @@
     </div>
 
     <div class="controls">
-      <button id="prev-btn">Previous</button>
-      <button id="next-btn">Next</button>
+      <button id="prev-btn" type="button">Previous</button>
+      <button id="next-btn" type="button">Next</button>
     </div>
   </div>
 
   <script>
-    // Utility: stop/reset videos inside an element
     function stopVideos(root) {
       if (!root) return;
       root.querySelectorAll("video").forEach(v => {
@@ -557,7 +582,6 @@
     // Albums (3 radios -> show slide 1/2/3)
     (function initAlbums() {
       const albums = Array.from(document.querySelectorAll(".album"));
-
       albums.forEach(album => {
         const radios = Array.from(album.querySelectorAll('input[type="radio"]'));
         const dots = Array.from(album.querySelectorAll(".album-dot"));
@@ -582,11 +606,11 @@
       });
     })();
 
-    // Flipbook navigation:
+    // Navigation:
     // - Desktop: flip by SHEET (spread view)
     // - Mobile: show ONE SIDE at a time (page-by-page)
     (function initNavigation() {
-      const pages = Array.from(document.querySelectorAll(".book .page"));
+      const sheets = Array.from(document.querySelectorAll(".book .page"));
       const prevBtn = document.getElementById("prev-btn");
       const nextBtn = document.getElementById("next-btn");
       const mq = window.matchMedia("(max-width: 768px)");
@@ -597,23 +621,23 @@
 
       function buildVirtualSides() {
         virtualSides = [];
-        pages.forEach(p => {
-          virtualSides.push({ sheet: p, side: "front" });
-          virtualSides.push({ sheet: p, side: "back" });
+        sheets.forEach(s => {
+          virtualSides.push({ sheet: s, side: "front" });
+          virtualSides.push({ sheet: s, side: "back" });
         });
       }
 
-      // Desktop z-index fix: flipped sheets go behind
       function applyDesktopZIndex() {
-        pages.forEach((p, i) => {
-          const flipped = p.classList.contains("flipped");
-          p.style.zIndex = flipped ? String(i + 1) : String(pages.length - i);
+        // Flipped sheets must go behind
+        sheets.forEach((s, i) => {
+          const flipped = s.classList.contains("flipped");
+          s.style.zIndex = flipped ? String(i + 1) : String(sheets.length - i);
         });
       }
 
       function setDesktopButtons() {
         prevBtn.disabled = desktopCurrent === 0;
-        nextBtn.disabled = desktopCurrent === pages.length;
+        nextBtn.disabled = desktopCurrent === sheets.length;
       }
 
       function setMobileButtons() {
@@ -622,10 +646,10 @@
       }
 
       function clearMobileSideVisibility() {
-        pages.forEach(p => {
-          p.classList.remove("flipped");
-          const f = p.querySelector(".front");
-          const b = p.querySelector(".back");
+        sheets.forEach(s => {
+          s.classList.remove("flipped");
+          const f = s.querySelector(".front");
+          const b = s.querySelector(".back");
           if (f) f.classList.remove("side-active");
           if (b) b.classList.remove("side-active");
         });
@@ -634,28 +658,27 @@
       function renderMobile() {
         clearMobileSideVisibility();
         const v = virtualSides[mobileIndex];
-        const sideEl = v.sheet.querySelector(v.side === "front" ? ".front" : ".back");
-        if (sideEl) sideEl.classList.add("side-active");
+        const el = v.sheet.querySelector(v.side === "front" ? ".front" : ".back");
+        if (el) el.classList.add("side-active");
         setMobileButtons();
       }
 
       function initDesktopMode() {
-        // reset
         clearMobileSideVisibility();
-        pages.forEach(p => p.classList.remove("flipped"));
+        sheets.forEach(s => s.classList.remove("flipped"));
         desktopCurrent = 0;
 
         prevBtn.onclick = () => {
           if (desktopCurrent <= 0) return;
           desktopCurrent -= 1;
-          pages[desktopCurrent].classList.remove("flipped");
+          sheets[desktopCurrent].classList.remove("flipped");
           applyDesktopZIndex();
           setDesktopButtons();
         };
 
         nextBtn.onclick = () => {
-          if (desktopCurrent >= pages.length) return;
-          pages[desktopCurrent].classList.add("flipped");
+          if (desktopCurrent >= sheets.length) return;
+          sheets[desktopCurrent].classList.add("flipped");
           desktopCurrent += 1;
           applyDesktopZIndex();
           setDesktopButtons();
@@ -666,8 +689,7 @@
       }
 
       function initMobileMode() {
-        // reset
-        pages.forEach(p => p.classList.remove("flipped"));
+        sheets.forEach(s => s.classList.remove("flipped"));
         buildVirtualSides();
         mobileIndex = 0;
         renderMobile();
@@ -694,7 +716,6 @@
         else initDesktopMode();
       }
 
-      // Re-init on resize/breakpoint change
       if (mq.addEventListener) mq.addEventListener("change", initByViewport);
       else mq.addListener(initByViewport);
 
