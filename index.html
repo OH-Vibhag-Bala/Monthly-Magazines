@@ -9,6 +9,85 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Laila:wght@400;700&family=Mukta:wght@300;400;700&family=Rozha+One&display=swap"
         rel="stylesheet">
+
+        <!-- Album pagination CSS (kept here so you don't have to edit style.css) -->
+    <style>
+        /* Album widget */
+        .album {
+            margin-top: 12px;
+        }
+
+        .album input[type="radio"] {
+            position: absolute;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .album-slides {
+            position: relative;
+            width: 100%;
+            height: 260px;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .album-slide {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .album-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* Show the selected slide */
+        #gajanan-1:checked~.album-slides .s1 {
+            display: flex;
+        }
+
+        #gajanan-2:checked~.album-slides .s2 {
+            display: flex;
+        }
+
+        #gajanan-3:checked~.album-slides .s3 {
+            display: flex;
+        }
+
+        .album-pagination {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .album-pagination label {
+            width: 12px;
+            height: 12px;
+            border-radius: 999px;
+            border: 2px solid #333;
+            cursor: pointer;
+            display: inline-block;
+        }
+
+        #gajanan-1:checked~.album-pagination label[for="gajanan-1"],
+        #gajanan-2:checked~.album-pagination label[for="gajanan-2"],
+        #gajanan-3:checked~.album-pagination label[for="gajanan-3"] {
+            background: #333;
+        }
+
+        .album-caption {
+            text-align: center;
+            font-size: 0.95rem;
+            margin-top: 8px;
+        }
+    </style>
+</head>
 </head>
 
 <body>
@@ -28,7 +107,7 @@
                 </div>
                 <div class="back">
                     <div class="page-content">
-                        <h2>Editor's Note</h2>
+                        <h2>Gajanan Shakha</h2>
                         <p>Namaste Kids! Welcome to the January edition of your favorite magazine.</p>
                         <p><strong>Focus of the Month:</strong> Inspiring Stories of Sri Krishna.</p>
                         <p>Let us learn, play, and grow with pride.</p>
@@ -37,21 +116,52 @@
                 </div>
             </div>
 
-            <!-- Page 2: Video -->
-            <div class="page" id="page2" style="z-index: 5;">
+            <!-- Page 5: RIGHT side page (album) + Back Cover moved here -->
+            <div class="page" id="page5" style="z-index: 6;">
                 <div class="front">
                     <div class="page-content">
-                        <h2>Bala Gana Corner</h2>
-                        <div class="video-container">
-                            <!-- Placeholder for YouTube Video -->
-                            <iframe width="100%" height="200"
-                                src="https://www.youtube.com/embed/rCPUvOa4sXE?si=58xvHsC3zNU4broz"
-                                title="YouTube video player" frameborder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                                referrerpolicy="strict-origin-when-cross-origin" allowfullscreen>
-                            </iframe>
+                        <h2>Gajanan shakha</h2>
+
+                        <!-- IMPORTANT: Google Drive /view links won't work for <img>.
+                             Use direct view links like: https://drive.google.com/uc?export=view&id=FILE_ID
+                             Files must be shared publicly. -->
+                        <div class="album">
+                            <input type="radio" name="gajanan-album" id="gajanan-1" checked>
+                            <input type="radio" name="gajanan-album" id="gajanan-2">
+                            <input type="radio" name="gajanan-album" id="gajanan-3">
+
+                            <div class="album-slides">
+                                <div class="album-slide s1">
+                                    <img loading="lazy"
+                                        src="https://drive.google.com/uc?export=view&id=1KA6EOUXE8G_Gr-rbCxf8BBcnQHUoftZn"
+                                        alt="Gajanan Shakha Photo 1">
+                                </div>
+                                <div class="album-slide s2">
+                                    <img loading="lazy"
+                                        src="https://drive.google.com/uc?export=view&id=1EjsTerJ73_xFTqo71jTMHLnKZKq7TDOG"
+                                        alt="Gajanan Shakha Photo 2">
+                                </div>
+                                <div class="album-slide s3">
+                                    <img loading="lazy"
+                                        src="https://drive.google.com/uc?export=view&id=1ra_TLDq5u1noP-y9ec9o3VrolGXzUSVb"
+                                        alt="Gajanan Shakha Photo 3">
+                                </div>
+                            </div>
+
+                            <div class="album-pagination">
+                                <label for="gajanan-1" aria-label="Photo 1"></label>
+                                <label for="gajanan-2" aria-label="Photo 2"></label>
+                                <label for="gajanan-3" aria-label="Photo 3"></label>
+                            </div>
+
+                            <div class="album-caption">Tap the dots to switch photos</div>
+
+                            <!-- Original view links (kept here as reference)
+                            https://drive.google.com/file/d/1KA6EOUXE8G_Gr-rbCxf8BBcnQHUoftZn/view
+                            https://drive.google.com/file/d/1EjsTerJ73_xFTqo71jTMHLnKZKq7TDOG/view
+                            https://drive.google.com/file/d/1ra_TLDq5u1noP-y9ec9o3VrolGXzUSVb/view
+                            -->
                         </div>
-                        <p class="caption">Watch the magic unfold!</p>
                     </div>
                 </div>
                 <div class="back">
@@ -109,3 +219,4 @@
 </body>
 
 </html>
+
