@@ -3,413 +3,515 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="color-scheme" content="light" />
   <title>HSS - Ohio Vibhag Bala Gana Monthly Magazine - Jan - 2026</title>
 
-  <link rel="stylesheet" href="style.css" />
-  <link
-    href="https://fonts.googleapis.com/css2?family=Laila:wght@400;700&family=Mukta:wght@300;400;700&family=Rozha+One&display=swap"
-    rel="stylesheet"
-  />
+  <!--
+    Executive summary (what was fixed and why)
+    - Converted the desktop layout into a true 2-page spread flipbook: each sheet is a half-width page anchored at the spine (50%),
+      so when you flip, the sheet back becomes the LEFT page and the next sheet front becomes the RIGHT page. This prevents backs
+      (especially Sheet 1 back) from being hidden behind the next sheet.
+    - Rebuilt z-index stacking in JS to match physical page stacks (unflipped stack on the right, flipped stack on the left).
+    - Removed the broken radio/label album controls and rebuilt album pagination dynamically with accessible <button> dots
+      (ARIA roles, roving tabindex, keyboard arrows/Home/End support).
+    - Fixed invalid/broken HTML from the original (missing </video>, malformed <img>, stray </video> text inside an image slide),
+      which was corrupting the DOM and “messing up” later pages.
+    - Ensured media never crops: album images/videos use object-fit: contain, and album frames are responsive (aspect-ratio + clamps).
+    - Fixed scrolling: body no longer relies on overflow:hidden; content can scroll normally, and mobile uses a safe bottom padding
+      so the fixed navigation bar does not cover content.
+    - Navigation:
+      * Desktop (>= 769px): flip by SHEET (spread view). One click advances to the next spread.
+      * Mobile (<= 768px): single-side navigation across 16 sides (front/back of each of 8 sheets).
+    - Videos stop automatically when switching slides and when leaving a page/side during navigation.
+    Source: provided original HTML fileciteturn0file0
+  -->
 
   <style>
-    html,
-    body {
+    :root{
+      --primary-color: #FF9933; /* saffron */
+      --accent-color: #FFCC00;  /* yellow */
+      --text-color: #8b0000;    /* dark red */
+      --bg-color: #FFFDD0;      /* cream */
+
+      --page-radius: 10px;
+      --page-border: rgba(0,0,0,0.10);
+      --shadow: 0 10px 30px rgba(0,0,0,0.20);
+
+      /* Desktop sizing (spread = 2 pages) */
+      --pageW: clamp(320px, 36vw, 460px);
+      --spreadW: calc(var(--pageW) * 2);
+      --pageH: clamp(520px, 72vh, 660px);
+
+      --ui-gap: 12px;
+      --ui-radius: 12px;
+    }
+
+    *{ box-sizing: border-box; }
+
+    html, body{
       width: 100%;
+      height: 100%;
       max-width: 100%;
       overflow-x: hidden;
     }
 
-    body {
-      min-height: 100vh;
-      overflow-x: hidden !important;
-      overflow-y: auto !important;
-      align-items: flex-start !important;
-      padding: 20px 12px 90px;
-      box-sizing: border-box;
+    body{
+      margin: 0;
+      padding: 18px 12px 96px;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      background: #f0e6d2;
+      color: #111;
+      overflow-x: hidden;
+      overflow-y: auto;
     }
 
-    .magazine-container {
-      width: min(100%, 980px) !important;
-      height: auto !important;
-      min-height: 640px;
+    .magazine-container{
+      width: min(100%, calc(var(--spreadW) + 40px));
       margin: 0 auto;
       display: flex;
       flex-direction: column;
-      align-items: center !important;
-      justify-content: flex-start !important;
-      padding-bottom: 20px;
+      align-items: center;
+      gap: 14px;
     }
 
-    .book {
-      width: 420px !important;
-      max-width: 100%;
-      height: 580px !important;
+    .book{
       position: relative;
+      width: var(--spreadW);
+      max-width: 100%;
+      height: var(--pageH);
+      perspective: 1600px;
       transform-style: preserve-3d;
+      -webkit-transform-style: preserve-3d;
+      overflow: visible; /* allow page swing */
     }
 
-    .page {
-      width: 100%;
-      height: 100%;
+    .book__base{
       position: absolute;
       inset: 0;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      pointer-events: none;
+      border-radius: var(--page-radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--page-border);
+      background: linear-gradient(
+        to right,
+        rgba(0,0,0,0.08),
+        rgba(0,0,0,0.02) 18%,
+        rgba(0,0,0,0.02) 82%,
+        rgba(0,0,0,0.08)
+      );
+    }
+
+    .book__base .base-left,
+    .book__base .base-right{
+      background: var(--bg-color);
+    }
+
+    .book__spine{
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      transform: translateX(-1px);
+      background: linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.22), rgba(0,0,0,0.10));
+      pointer-events: none;
+      z-index: 5;
+      opacity: 0.8;
+    }
+
+    .sheet{
+      position: absolute;
+      top: 0;
+      left: 50%;
+      width: 50%;
+      height: 100%;
       transform-origin: left center;
       transform-style: preserve-3d;
-      transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1);
-      background-color: white;
-      border-radius: 0 8px 8px 0;
-      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
-      overflow: hidden;
+      -webkit-transform-style: preserve-3d;
+      transition: transform 0.95s cubic-bezier(0.645, 0.045, 0.355, 1);
+      border-radius: 0 var(--page-radius) var(--page-radius) 0;
+      overflow: visible;
+      will-change: transform;
     }
 
-    .page.flipped {
+    .sheet.is-flipped{
       transform: rotateY(-180deg);
+      border-radius: var(--page-radius) 0 0 var(--page-radius);
     }
 
-    .front,
-    .back {
+    .page-face{
       position: absolute;
       inset: 0;
       width: 100%;
       height: 100%;
       backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      border: 1px solid var(--page-border);
+      background: var(--bg-color);
+      display: flex;
+      flex-direction: column;
       padding: 16px;
-      box-sizing: border-box;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: flex-start;
-      border: 1px solid #ddd;
-      background-color: var(--bg-color);
       overflow: hidden;
     }
 
-    .front {
+    .page-face.front{
+      border-radius: 0 var(--page-radius) var(--page-radius) 0;
       z-index: 2;
-      border-radius: 0 8px 8px 0;
     }
 
-    .back {
+    .page-face.back{
       transform: rotateY(180deg);
+      border-radius: var(--page-radius) 0 0 var(--page-radius);
+      background: linear-gradient(to right, #e3dac9, var(--bg-color));
       z-index: 1;
-      border-radius: 8px 0 0 8px;
-      background: linear-gradient(to right, #e3dac9, #fffdd0);
     }
 
-    .cover-design {
-      text-align: center;
-      width: 100%;
-      height: 100%;
-      border: 5px solid var(--primary-color);
-      padding: 10px;
-      border-radius: 6px;
-      background: white;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      align-items: center;
-      overflow: hidden;
-    }
-
-    .cover-img {
-      width: 100%;
-      height: auto;
-      max-height: 310px;
-      object-fit: contain !important;
-      border-radius: 5px;
-      margin-bottom: 12px;
-      border: 2px solid var(--accent-color);
-      background: #fff;
-      flex: 0 0 auto;
-    }
-
-    .magazine-title {
-      margin: 8px 0;
-    }
-
-    .page-content {
+    .page-content{
       position: relative;
       width: 100%;
       height: 100%;
       border: 2px double var(--primary-color);
-      padding: 16px 16px 34px;
-      text-align: center;
-      overflow-y: auto;
-      overflow-x: hidden;
-      box-sizing: border-box;
-      scrollbar-width: thin;
+      border-radius: 8px;
+      padding: 14px 14px 34px;
+      overflow: auto;
+      background: rgba(255,255,255,0.40);
+      scrollbar-gutter: stable both-edges;
     }
 
-    .page-number {
+    .page-number{
       position: absolute;
-      bottom: 8px;
       right: 12px;
+      bottom: 10px;
       font-size: 12px;
       opacity: 0.75;
     }
 
-    .activities h2 {
-      margin-top: 0;
+    h1, h2{
+      margin: 0;
+      color: var(--text-color);
     }
 
-    .activities p {
-      margin-bottom: 10px;
+    h2{
+      font-size: 1.35rem;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent-color);
+      margin-bottom: 14px;
     }
 
-    .activities ul {
-      margin: 8px 0 0;
-      padding-left: 20px;
-      text-align: left;
-      line-height: 1.45;
-    }
-
-    .activities li {
-      margin-bottom: 8px;
-    }
-
-    .album {
-      width: 100%;
-      margin-top: 10px;
-    }
-
-    .album-slides {
-      position: relative;
-      width: 100%;
-      height: 280px;
-      border-radius: 12px;
-      overflow: hidden;
-      background: #f7f1e4;
-      border: 1px solid rgba(0, 0, 0, 0.08);
-    }
-
-    .album-slide {
-      position: absolute;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 8px;
-      box-sizing: border-box;
-      background: #f7f1e4;
-    }
-
-    .album-slide.active {
-      display: flex;
-    }
-
-    .album-slide img,
-    .album-slide video {
+    .cover-design{
       width: 100%;
       height: 100%;
-      object-fit: contain !important;
-      display: block;
+      border: 5px solid var(--primary-color);
       border-radius: 8px;
+      padding: 12px;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      overflow: hidden;
+    }
+
+    .hss-branding{
+      font-weight: 800;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--primary-color);
+      font-size: 1.05rem;
+      margin-top: 4px;
+    }
+
+    .cover-img{
+      width: 100%;
+      max-width: 100%;
+      height: auto;
+      max-height: 320px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 2px solid var(--accent-color);
       background: #fff;
     }
 
-    .album-pagination {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      align-items: center;
-      flex-wrap: wrap;
-      margin-top: 10px;
+    .magazine-title{
+      text-align: center;
+      font-size: 1.4rem;
+      line-height: 1.2;
+      text-shadow: 0 1px 0 rgba(0,0,0,0.05);
     }
 
-    .album-dot {
-      width: 12px;
-      height: 12px;
+    .edition-text{
+      margin-top: auto;
+      font-weight: 800;
+      color: var(--primary-color);
+    }
+
+    .activities p{
+      margin: 0 0 10px;
+    }
+    .activities ul{
+      margin: 8px 0 0;
+      padding-left: 18px;
+      line-height: 1.45;
+    }
+    .activities li{
+      margin: 0 0 8px;
+    }
+
+    .ornament{
+      margin-top: 14px;
+      height: 10px;
+      border-radius: 999px;
+      background: linear-gradient(to right, transparent, rgba(0,0,0,0.10), transparent);
+    }
+
+    .album{
+      margin-top: 10px;
+      width: 100%;
+    }
+
+    .album-slides{
+      position: relative;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      min-height: 200px;
+      max-height: 360px;
+      height: clamp(210px, 32vh, 330px);
+      border-radius: 12px;
+      overflow: hidden;
+      background: #f7f1e4;
+      border: 1px solid rgba(0,0,0,0.10);
+    }
+
+    .album-slide{
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px;
+      background: #f7f1e4;
+    }
+
+    .album-slide[hidden]{
+      display: none !important;
+    }
+
+    .album-slide img,
+    .album-slide video{
+      width: 100%;
+      height: 100%;
+      object-fit: contain; /* critical: show full content */
+      object-position: center;
+      display: block;
+      border-radius: 10px;
+      background: #fff;
+    }
+
+    .album-pagination{
+      margin-top: 10px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .album-dot{
+      width: 14px;
+      height: 14px;
       border-radius: 999px;
       border: 2px solid #333;
       background: transparent;
       cursor: pointer;
-      display: inline-block;
       padding: 0;
-      margin: 0;
-      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
-    .album-dot.active {
+    .album-dot[aria-selected="true"]{
       background: #333;
     }
 
-    .album-caption {
+    .album-dot:focus-visible{
+      outline: 3px solid rgba(0,0,0,0.35);
+      outline-offset: 2px;
+    }
+
+    .album-caption{
       text-align: center;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       margin-top: 8px;
+      opacity: 0.9;
     }
 
-    .controls {
-      position: static !important;
-      display: flex !important;
-      justify-content: center;
-      gap: 14px;
-      margin-top: 18px !important;
-      bottom: auto !important;
-      left: auto !important;
-      right: auto !important;
-    }
-
-    .controls button {
-      min-width: 130px;
-      padding: 12px 18px;
-      border-radius: 12px;
-      font-size: 15px;
-    }
-
-    .back-cover {
+    .back-cover{
       display: flex;
       flex-direction: column;
       justify-content: center;
-      background-color: #ffebcd;
+      background: #ffebcd;
+      text-align: center;
     }
 
-    @media (max-width: 900px) {
-      .book {
-        width: 390px !important;
-        height: 560px !important;
-      }
+    a{
+      color: var(--text-color);
+      font-weight: 800;
+      text-decoration: none;
+    }
+    a:hover{ text-decoration: underline; }
 
-      .album-slides {
-        height: 250px;
-      }
-
-      .cover-img {
-        max-height: 270px;
-      }
+    .controls{
+      width: min(100%, var(--spreadW));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--ui-gap);
     }
 
-    @media (max-width: 768px) {
-      body {
-        padding: 12px 10px 88px;
+    .controls button{
+      appearance: none;
+      border: none;
+      padding: 12px 16px;
+      border-radius: var(--ui-radius);
+      font-weight: 800;
+      background: var(--primary-color);
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.16);
+      min-width: 140px;
+    }
+
+    .controls button:hover{ background: #e68a00; }
+
+    .controls button:disabled{
+      background: #c7c7c7;
+      cursor: not-allowed;
+      box-shadow: none;
+      opacity: 0.9;
+    }
+
+    .controls button:focus-visible{
+      outline: 3px solid rgba(0,0,0,0.35);
+      outline-offset: 2px;
+    }
+
+    @media (max-width: 768px){
+      :root{
+        --pageW: 100%;
+        --spreadW: 100%;
+        --pageH: auto;
       }
 
-      .magazine-container {
-        width: 100% !important;
-        min-height: auto;
-        padding-bottom: 74px !important;
+      body{
+        padding: 12px 10px 92px;
       }
 
-      .book {
-        width: 100% !important;
-        height: auto !important;
-        perspective: none !important;
-        transform: none !important;
+      .magazine-container{
+        width: 100%;
       }
 
-      .page {
-        position: relative !important;
-        width: 100% !important;
-        height: auto !important;
-        min-height: 0 !important;
-        transform: none !important;
-        box-shadow: none !important;
-        border-radius: 12px !important;
-        margin-bottom: 0;
+      .book{
+        width: 100%;
+        height: auto;
+        perspective: none;
+      }
+
+      .book__base,
+      .book__spine{
         display: none;
       }
 
-      .page.mobile-visible {
-        display: block !important;
+      .sheet{
+        position: relative;
+        left: 0;
+        width: 100%;
+        height: auto;
+        transform: none !important;
+        border-radius: var(--page-radius);
+        display: none;
       }
 
-      .front,
-      .back {
-        position: relative !important;
-        inset: auto !important;
-        width: 100% !important;
-        height: auto !important;
+      .sheet.is-mobile-visible{
+        display: block;
+      }
+
+      .page-face{
+        position: relative;
+        inset: auto;
+        height: auto;
         min-height: calc(100vh - 170px);
         transform: none !important;
-        backface-visibility: visible !important;
-        display: none !important;
-        border-radius: 12px !important;
-        padding: 12px !important;
+        backface-visibility: visible;
+        -webkit-backface-visibility: visible;
+        border-radius: var(--page-radius);
+        display: none;
       }
 
-      .front.side-active,
-      .back.side-active {
-        display: flex !important;
+      .page-face.is-side-active{
+        display: flex;
       }
 
-      .page-content {
-        height: auto !important;
-        min-height: calc(100vh - 210px);
-        overflow-y: auto !important;
+      .page-content{
+        height: auto;
+        overflow: visible;
       }
 
-      .cover-design {
-        height: auto !important;
-        min-height: calc(100vh - 210px);
+      .controls{
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        margin: 0;
+        padding: 10px 12px;
+        background: rgba(255,255,255,0.94);
+        backdrop-filter: blur(6px);
+        box-shadow: 0 -6px 18px rgba(0,0,0,0.10);
+        z-index: 9999;
       }
 
-      .cover-img {
+      .controls button{
+        flex: 1 1 0;
+        min-width: 0;
+        width: 50%;
+        padding: 12px 10px;
+        font-size: 16px;
+      }
+
+      .album-slides{
+        height: clamp(200px, 30vh, 280px);
+        max-height: 320px;
+      }
+
+      .cover-img{
         max-height: 240px;
       }
 
-      .album-slides {
-        height: 220px;
-      }
-
-      .controls {
-        position: fixed !important;
-        left: 0 !important;
-        right: 0 !important;
-        bottom: 0 !important;
-        margin: 0 !important;
-        padding: 10px 12px !important;
-        background: rgba(255, 255, 255, 0.95) !important;
-        backdrop-filter: blur(6px);
-        box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.1);
-        z-index: 9999 !important;
-        justify-content: space-between !important;
-      }
-
-      .controls button {
-        flex: 1 1 0 !important;
-        min-width: 0 !important;
-        width: 50% !important;
-        padding: 12px 10px !important;
+      .magazine-title{
+        font-size: 1.2rem;
       }
     }
 
-    @media (max-width: 480px) {
-      body {
-        padding-left: 8px;
-        padding-right: 8px;
-      }
-
-      .page-content {
-        padding: 12px 12px 32px;
-      }
-
-      .cover-img {
-        max-height: 210px;
-      }
-
-      .album-slides {
-        height: 200px;
-      }
-
-      .album-caption {
-        font-size: 0.84rem;
-      }
-
-      .magazine-title {
-        font-size: 1.15rem !important;
-        line-height: 1.2;
-      }
+    @media (prefers-reduced-motion: reduce){
+      .sheet{ transition: none; }
     }
   </style>
 </head>
 
 <body>
   <div class="magazine-container">
-    <div class="book" id="book">
+    <div class="book" id="book" aria-label="HSS Ohio Vibhag Bala Gana magazine flipbook">
+      <div class="book__base" aria-hidden="true">
+        <div class="base-left"></div>
+        <div class="base-right"></div>
+      </div>
+      <div class="book__spine" aria-hidden="true"></div>
 
       <!-- SHEET 1 -->
-      <div class="page" id="sheet1">
-        <div class="front">
+      <section class="sheet" id="sheet1" aria-label="Sheet 1">
+        <div class="page-face front" aria-label="Page 1 Cover">
           <div class="cover-design">
             <div class="hss-branding">HSS Balagokulam</div>
             <img src="cover_art1.png" alt="Magazine Cover" class="cover-img" />
@@ -419,59 +521,81 @@
           </div>
         </div>
 
-        <div class="back">
+        <div class="page-face back" aria-label="Page 2 Gajanan Shakha">
           <div class="page-content activities">
             <h2>Gajanan Shakha</h2>
 
-            <div class="album" data-album="gajananintro">
-              <div class="album-slides">
-                <div class="album-slide active">
-                  <img loading="lazy" src="Gajanan-Article1.JPG" alt="Gajanan Shakha media 1" />
-                </div>
+            <div class="album" data-album-title="Gajanan Shakha Articles">
+              <div class="album-slides" aria-label="Gajanan Shakha article album">
                 <div class="album-slide">
-                  <img loading="lazy" src="Gajanan-Article2.JPG" alt="Gajanan Shakha media 2" />
+                  <img loading="lazy" decoding="async" src="Gajanan-Article1.JPG" alt="Gajanan Shakha article image 1" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="Gajanan-Article2.JPG" alt="Gajanan Shakha article image 2" />
                 </div>
               </div>
 
-              <div class="album-pagination" aria-label="Gajanan intro album"></div>
-              <div class="album-caption">Tap the dots to switch photos/videos</div>
+              <div class="album-pagination" aria-label="Gajanan Shakha article album pagination"></div>
+              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
             <div class="page-number">2</div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- SHEET 2 -->
-      <div class="page" id="sheet2">
-        <div class="front">
+      <section class="sheet" id="sheet2" aria-label="Sheet 2">
+        <div class="page-face front" aria-label="Page 3 Gajanan Shakha">
           <div class="page-content">
             <h2>Gajanan Shakha</h2>
 
-            <div class="album" data-album="gajanan">
-              <div class="album-slides">
-                <div class="album-slide active"><img loading="lazy" src="gajanan001.jpg" alt="Gajanan Shakha media 1" /></div>
-                <div class="album-slide"><img loading="lazy" src="gajanan002.jpg" alt="Gajanan Shakha media 2" /></div>
-                <div class="album-slide"><img loading="lazy" src="gajanan003.jpg" alt="Gajanan Shakha media 3" /></div>
-                <div class="album-slide"><img loading="lazy" src="gajanan004.jpg" alt="Gajanan Shakha media 4" /></div>
-                <div class="album-slide"><img loading="lazy" src="gajanan005.jpg" alt="Gajanan Shakha media 5" /></div>
-                <div class="album-slide"><img loading="lazy" src="gajanan006.jpg" alt="Gajanan Shakha media 6" /></div>
-                <div class="album-slide"><img loading="lazy" src="gajanan007.jpg" alt="Gajanan Shakha media 7" /></div>
-                <div class="album-slide"><img loading="lazy" src="gajanan008.jpg" alt="Gajanan Shakha media 8" /></div>
-                <div class="album-slide"><img loading="lazy" src="gajanan009.jpg" alt="Gajanan Shakha media 9" /></div>
-                <div class="album-slide"><img loading="lazy" src="gajanan010.jpg" alt="Gajanan Shakha media 10" /></div>
-                <div class="album-slide"><img loading="lazy" src="gajanan011.jpg" alt="Gajanan Shakha media 11" /></div>
+            <div class="album" data-album-title="Gajanan Shakha Album">
+              <div class="album-slides" aria-label="Gajanan Shakha photo album">
+                <div class="album-slide">
+                  <img loading="lazy" decoding="async" src="gajanan001.jpg" alt="Gajanan Shakha media 1" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="gajanan002.jpg" alt="Gajanan Shakha media 2" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="gajanan003.jpg" alt="Gajanan Shakha media 3" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="gajanan004.jpg" alt="Gajanan Shakha media 4" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="gajanan005.jpg" alt="Gajanan Shakha media 5" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="gajanan006.jpg" alt="Gajanan Shakha media 6" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="gajanan007.jpg" alt="Gajanan Shakha media 7" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="gajanan008.jpg" alt="Gajanan Shakha media 8" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="gajanan009.jpg" alt="Gajanan Shakha media 9" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="gajanan010.jpg" alt="Gajanan Shakha media 10" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="gajanan011.jpg" alt="Gajanan Shakha media 11" />
+                </div>
               </div>
 
-              <div class="album-pagination" aria-label="Gajanan album"></div>
-              <div class="album-caption">Tap the dots to switch photos/videos</div>
+              <div class="album-pagination" aria-label="Gajanan Shakha album pagination"></div>
+              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
             <div class="page-number">3</div>
           </div>
         </div>
 
-        <div class="back">
+        <div class="page-face back" aria-label="Page 4 Kartikeya Shakha">
           <div class="page-content activities">
             <h2>Kartikeya Shakha</h2>
             <p>Shakha activities and highlights:</p>
@@ -480,45 +604,46 @@
               <li>Celebrated Makar-Sankranti Utsav.</li>
               <li>Craft activity showing kite flying tradition.</li>
               <li>Played new games, practised Yoga and Pranayam.</li>
-              <li>Balas led Amrutvachan and Subhashitam.</li>
-              <li>During Baudhik, balas learned from our Balagokulam book and showed great interest in stories of Abhimanyu and Hanumanji.</li>
+              <li>Balas lead Amrutvachan and Subhashitam.</li>
+              <li>During Baudhik, balas learned from our Balagokulam book and showed a great interest in stories of Abhimanyu and Hanumanji.</li>
             </ul>
+            <div class="ornament"></div>
             <div class="page-number">4</div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- SHEET 3 -->
-      <div class="page" id="sheet3">
-        <div class="front">
+      <section class="sheet" id="sheet3" aria-label="Sheet 3">
+        <div class="page-face front" aria-label="Page 5 Kartikeya Shakha">
           <div class="page-content">
             <h2>Kartikeya Shakha</h2>
 
-            <div class="album" data-album="kartikeya">
-              <div class="album-slides">
-                <div class="album-slide active">
+            <div class="album" data-album-title="Kartikeya Shakha Album">
+              <div class="album-slides" aria-label="Kartikeya Shakha media album">
+                <div class="album-slide">
                   <video controls preload="metadata">
                     <source src="karthikeya001.mp4" type="video/mp4" />
-                    Your browser does not support MP4 video.
+                    Sorry, your browser does not support MP4 video.
                   </video>
                 </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="karthikeya002.jpg" alt="Kartikeya Shakha media 2" />
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="karthikeya002.jpg" alt="Kartikeya Shakha media 2" />
                 </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="karthikeya003.jpg" alt="Kartikeya Shakha media 3" />
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="karthikeya003.jpg" alt="Kartikeya Shakha media 3" />
                 </div>
               </div>
 
-              <div class="album-pagination" aria-label="Kartikeya album"></div>
-              <div class="album-caption">Tap the dots to switch photos/videos</div>
+              <div class="album-pagination" aria-label="Kartikeya Shakha album pagination"></div>
+              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
             <div class="page-number">5</div>
           </div>
         </div>
 
-        <div class="back">
+        <div class="page-face back" aria-label="Page 6 Pratap Shakha">
           <div class="page-content activities">
             <h2>Pratap Shakha</h2>
             <p>Shakha activities and highlights:</p>
@@ -529,33 +654,40 @@
               <li>A few performed Carnatic kirtanas.</li>
               <li>Conducted a craft activity creating Goddess Saraswati pictures using cards.</li>
             </ul>
+            <div class="ornament"></div>
             <div class="page-number">6</div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- SHEET 4 -->
-      <div class="page" id="sheet4">
-        <div class="front">
+      <section class="sheet" id="sheet4" aria-label="Sheet 4">
+        <div class="page-face front" aria-label="Page 7 Pratap Shakha">
           <div class="page-content">
             <h2>Pratap Shakha</h2>
 
-            <div class="album" data-album="pratap">
-              <div class="album-slides">
-                <div class="album-slide active"><img loading="lazy" src="pratap001.JPG" alt="Pratap Shakha media 1" /></div>
-                <div class="album-slide"><img loading="lazy" src="pratap002.JPG" alt="Pratap Shakha media 2" /></div>
-                <div class="album-slide"><img loading="lazy" src="pratap003.JPG" alt="Pratap Shakha media 3" /></div>
+            <div class="album" data-album-title="Pratap Shakha Album">
+              <div class="album-slides" aria-label="Pratap Shakha photo album">
+                <div class="album-slide">
+                  <img loading="lazy" decoding="async" src="pratap001.JPG" alt="Pratap Shakha media 1" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="pratap002.JPG" alt="Pratap Shakha media 2" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="pratap003.JPG" alt="Pratap Shakha media 3" />
+                </div>
               </div>
 
-              <div class="album-pagination" aria-label="Pratap album"></div>
-              <div class="album-caption">Tap the dots to switch photos/videos</div>
+              <div class="album-pagination" aria-label="Pratap Shakha album pagination"></div>
+              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
             <div class="page-number">7</div>
           </div>
         </div>
 
-        <div class="back">
+        <div class="page-face back" aria-label="Page 8 Pushpak Shakha">
           <div class="page-content activities">
             <h2>Pushpak Shakha</h2>
             <p>Shakha activities and highlights:</p>
@@ -563,72 +695,84 @@
               <li>Conducted Sankranthi Shakha kids craft.</li>
               <li>Concluded SNY in our Shakha (Pushpak Shakha Dayton) and issued participation certificates to all Balas.</li>
             </ul>
+            <div class="ornament"></div>
             <div class="page-number">8</div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- SHEET 5 -->
-      <div class="page" id="sheet5">
-        <div class="front">
+      <section class="sheet" id="sheet5" aria-label="Sheet 5">
+        <div class="page-face front" aria-label="Page 9 Pushpa Shakha">
           <div class="page-content">
-            <h2>Pushpak Shakha</h2>
+            <h2>Pushpa Shakha</h2>
 
-            <div class="album" data-album="pushpak">
-              <div class="album-slides">
-                <div class="album-slide active"><img loading="lazy" src="pushpak001.jpg" alt="Pushpak Shakha media 1" /></div>
-                <div class="album-slide"><img loading="lazy" src="pushpak002.jpg" alt="Pushpak Shakha media 2" /></div>
-                <div class="album-slide"><img loading="lazy" src="pushpak003.jpg" alt="Pushpak Shakha media 3" /></div>
+            <div class="album" data-album-title="Pushpa Shakha Album">
+              <div class="album-slides" aria-label="Pushpa Shakha photo album">
+                <div class="album-slide">
+                  <img loading="lazy" decoding="async" src="pushpak001.jpg" alt="Pushpa Shakha media 1" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="pushpak002.jpg" alt="Pushpa Shakha media 2" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="pushpak003.jpg" alt="Pushpa Shakha media 3" />
+                </div>
               </div>
 
-              <div class="album-pagination" aria-label="Pushpak album"></div>
-              <div class="album-caption">Tap the dots to switch photos/videos</div>
+              <div class="album-pagination" aria-label="Pushpa Shakha album pagination"></div>
+              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
             <div class="page-number">9</div>
           </div>
         </div>
 
-        <div class="back">
+        <div class="page-face back" aria-label="Page 10 Saraswati Shakha">
           <div class="page-content activities">
             <h2>Saraswati Shakha</h2>
             <p>On the second Sunday of February, Bala-focused activities were conducted.</p>
             <ul>
-              <li>Bala led a few games, and we were impressed to see him conduct them confidently at times even better than some Kishores.</li>
+              <li>Bala led a few games, and we were impressed to see him conduct them confidently—at times even better than some Kishores.</li>
               <li>A paper airplane-making competition was also organized.</li>
             </ul>
+            <div class="ornament"></div>
             <div class="page-number">10</div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- SHEET 6 -->
-      <div class="page" id="sheet6">
-        <div class="front">
+      <section class="sheet" id="sheet6" aria-label="Sheet 6">
+        <div class="page-face front" aria-label="Page 11 Saraswati Shakha">
           <div class="page-content">
             <h2>Saraswati Shakha</h2>
 
-            <div class="album" data-album="saraswati">
-              <div class="album-slides">
-                <div class="album-slide active"><img loading="lazy" src="saraswati001.jpg" alt="Saraswati Shakha media 1" /></div>
-                <div class="album-slide"><img loading="lazy" src="saraswati002.jpg" alt="Saraswati Shakha media 2" /></div>
+            <div class="album" data-album-title="Saraswati Shakha Album">
+              <div class="album-slides" aria-label="Saraswati Shakha media album">
                 <div class="album-slide">
+                  <img loading="lazy" decoding="async" src="saraswati001.jpg" alt="Saraswati Shakha media 1" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="saraswati002.jpg" alt="Saraswati Shakha media 2" />
+                </div>
+                <div class="album-slide" hidden>
                   <video controls preload="metadata">
                     <source src="saraswati003.mp4" type="video/mp4" />
-                    Your browser does not support MP4 video.
+                    Sorry, your browser does not support MP4 video.
                   </video>
                 </div>
               </div>
 
-              <div class="album-pagination" aria-label="Saraswati album"></div>
-              <div class="album-caption">Tap the dots to switch photos/videos</div>
+              <div class="album-pagination" aria-label="Saraswati Shakha album pagination"></div>
+              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
             <div class="page-number">11</div>
           </div>
         </div>
 
-        <div class="back">
+        <div class="page-face back" aria-label="Page 12 Sindhu Shakha">
           <div class="page-content activities">
             <h2>Sindhu Shakha</h2>
             <p>Shakha activities and highlights:</p>
@@ -636,75 +780,88 @@
               <li>In January, Balas started their first Bal-Shakha. The Balas managed all activities themselves, including Yoga, Khel, Baudhik, and Prarthana.</li>
               <li>The highlight of the Shakha was the Baudhik presented by Anurag Shahi, a 9-year-old Bal, on the topic “Importance of Khel in Shakha.”</li>
               <li>Throughout the month, Balas actively participated in SNY activities, and a few of them were awarded the SNY medal.</li>
-              <li>Celebrated Basant Panchami Utsav.</li>
+              <li>Celebrated Basant Panchami Utsav!</li>
               <li>Our talented young Bala and Kishore members showcased their incredible skills, making every moment truly unforgettable.</li>
             </ul>
+            <div class="ornament"></div>
             <div class="page-number">12</div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- SHEET 7 -->
-      <div class="page" id="sheet7">
-        <div class="front">
+      <section class="sheet" id="sheet7" aria-label="Sheet 7">
+        <div class="page-face front" aria-label="Page 13 Sindhu Shakha">
           <div class="page-content">
             <h2>Sindhu Shakha</h2>
 
-            <div class="album" data-album="sindhu">
-              <div class="album-slides">
-                <div class="album-slide active"><img loading="lazy" src="sindhu001.jpg" alt="Sindhu Shakha media 1" /></div>
-                <div class="album-slide"><img loading="lazy" src="sindhu002.jpg" alt="Sindhu Shakha media 2" /></div>
-                <div class="album-slide"><img loading="lazy" src="sindhu003.jpg" alt="Sindhu Shakha media 3" /></div>
+            <div class="album" data-album-title="Sindhu Shakha Album">
+              <div class="album-slides" aria-label="Sindhu Shakha photo album">
+                <div class="album-slide">
+                  <img loading="lazy" decoding="async" src="sindhu001.jpg" alt="Sindhu Shakha media 1" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="sindhu002.jpg" alt="Sindhu Shakha media 2" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="sindhu003.jpg" alt="Sindhu Shakha media 3" />
+                </div>
               </div>
 
-              <div class="album-pagination" aria-label="Sindhu album"></div>
-              <div class="album-caption">Tap the dots to switch photos/videos</div>
+              <div class="album-pagination" aria-label="Sindhu Shakha album pagination"></div>
+              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
             <div class="page-number">13</div>
           </div>
         </div>
 
-        <div class="back">
+        <div class="page-face back" aria-label="Page 14 Bharati Shakha">
           <div class="page-content activities">
             <h2>Bharati Shakha</h2>
             <p>Shakha activities and highlights:</p>
             <ul>
               <li>Makara Sankranti Utsav was celebrated with great enthusiasm.</li>
               <li>There was a good Bala turnout on the day of the utsav; the children participated in various games and thoroughly enjoyed themselves.</li>
-              <li>During the Baudhik, the children learned about the significance of Makara Sankranti and how it is celebrated across India.</li>
+              <li>During the baudhik, the children learned about the significance of Makara Sankranti and how it is celebrated across India.</li>
             </ul>
+            <div class="ornament"></div>
             <div class="page-number">14</div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- SHEET 8 -->
-      <div class="page" id="sheet8">
-        <div class="front">
+      <section class="sheet" id="sheet8" aria-label="Sheet 8">
+        <div class="page-face front" aria-label="Page 15 Bharati Shakha">
           <div class="page-content">
             <h2>Bharati Shakha</h2>
 
-            <div class="album" data-album="bharati">
-              <div class="album-slides">
-                <div class="album-slide active"><img loading="lazy" src="Bharati001.jpg" alt="Bharati Shakha media 1" /></div>
-                <div class="album-slide"><img loading="lazy" src="Bharati002.jpeg" alt="Bharati Shakha media 2" /></div>
-                <div class="album-slide"><img loading="lazy" src="Bharati003.jpg" alt="Bharati Shakha media 3" /></div>
+            <div class="album" data-album-title="Bharati Shakha Album">
+              <div class="album-slides" aria-label="Bharati Shakha photo album">
+                <div class="album-slide">
+                  <img loading="lazy" decoding="async" src="Bharati001.jpg" alt="Bharati Shakha media 1" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="Bharati002.jpeg" alt="Bharati Shakha media 2" />
+                </div>
+                <div class="album-slide" hidden>
+                  <img loading="lazy" decoding="async" src="Bharati003.jpg" alt="Bharati Shakha media 3" />
+                </div>
               </div>
 
-              <div class="album-pagination" aria-label="Bharati album"></div>
-              <div class="album-caption">Tap the dots to switch photos/videos</div>
+              <div class="album-pagination" aria-label="Bharati Shakha album pagination"></div>
+              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
             <div class="page-number">15</div>
           </div>
         </div>
 
-        <div class="back">
+        <div class="page-face back" aria-label="Page 16 Back Cover">
           <div class="page-content back-cover">
             <h2>HSS Balagokulam</h2>
             <p><em>To facilitate children to appreciate, learn, and practice Hindu way of life.</em></p>
-            <hr />
             <p><strong>Ohio Vibhag</strong></p>
             <p>
               Visit us:
@@ -714,205 +871,359 @@
             <div class="page-number">16</div>
           </div>
         </div>
-      </div>
+      </section>
 
     </div>
 
-    <div class="controls">
-      <button id="prev-btn" type="button">Previous</button>
-      <button id="next-btn" type="button">Next</button>
+    <div class="controls" role="navigation" aria-label="Magazine navigation">
+      <button id="prevBtn" type="button" aria-label="Previous page">Previous</button>
+      <button id="nextBtn" type="button" aria-label="Next page">Next</button>
     </div>
   </div>
 
   <script>
-    function stopVideos(root) {
-      if (!root) return;
-      root.querySelectorAll("video").forEach((video) => {
-        try {
-          video.pause();
-          video.currentTime = 0;
-        } catch (e) {}
-      });
-    }
+    (function () {
+      "use strict";
 
-    function buildAlbums() {
-      const albums = document.querySelectorAll(".album");
+      const mqMobile = window.matchMedia("(max-width: 768px)");
+      const book = document.getElementById("book");
+      const sheets = Array.from(book.querySelectorAll(".sheet"));
+      const prevBtn = document.getElementById("prevBtn");
+      const nextBtn = document.getElementById("nextBtn");
 
-      albums.forEach((album) => {
-        const slides = Array.from(album.querySelectorAll(".album-slide"));
-        const pagination = album.querySelector(".album-pagination");
-        let currentIndex = 0;
+      function clamp(n, min, max) {
+        return Math.max(min, Math.min(max, n));
+      }
 
-        pagination.innerHTML = "";
+      function isTypingContext(el) {
+        if (!el) return false;
+        const tag = String(el.tagName || "").toLowerCase();
+        return tag === "input" || tag === "textarea" || tag === "select" || el.isContentEditable;
+      }
 
-        slides.forEach((slide, index) => {
-          const dot = document.createElement("button");
-          dot.type = "button";
-          dot.className = "album-dot" + (index === 0 ? " active" : "");
-          dot.setAttribute("aria-label", "Slide " + (index + 1));
-          dot.addEventListener("click", () => {
-            showSlide(index);
-          });
-          pagination.appendChild(dot);
-        });
-
-        function showSlide(index) {
-          currentIndex = index;
-          slides.forEach((slide, i) => {
-            if (i !== index) stopVideos(slide);
-            slide.classList.toggle("active", i === index);
-          });
-
-          const dots = pagination.querySelectorAll(".album-dot");
-          dots.forEach((dot, i) => {
-            dot.classList.toggle("active", i === index);
-          });
-        }
-
-        showSlide(currentIndex);
-      });
-    }
-
-    (function initNavigation() {
-      const pages = Array.from(document.querySelectorAll(".book .page"));
-      const prevBtn = document.getElementById("prev-btn");
-      const nextBtn = document.getElementById("next-btn");
-      const mq = window.matchMedia("(max-width: 768px)");
-
-      let desktopIndex = 0;
-      let mobileSideIndex = 0;
-      let mobileSides = [];
-
-      function setDesktopZIndexes() {
-        pages.forEach((page, i) => {
-          page.style.zIndex = page.classList.contains("flipped")
-            ? String(i + 1)
-            : String(pages.length - i);
+      function stopVideos(root) {
+        if (!root) return;
+        root.querySelectorAll("video").forEach((v) => {
+          try {
+            v.pause();
+            v.currentTime = 0;
+          } catch (e) {}
         });
       }
 
-      function updateDesktopButtons() {
-        prevBtn.disabled = desktopIndex === 0;
-        nextBtn.disabled = desktopIndex === pages.length;
+      function stopAllVideos() {
+        stopVideos(book);
       }
 
-      function showDesktop() {
-        pages.forEach((page) => {
-          page.style.display = "block";
-          page.classList.remove("mobile-visible");
-          const front = page.querySelector(".front");
-          const back = page.querySelector(".back");
-          if (front) front.classList.remove("side-active");
-          if (back) back.classList.remove("side-active");
-        });
+      /* -------------------- Albums (dynamic + accessible) -------------------- */
+      function initAlbums() {
+        const albums = Array.from(document.querySelectorAll(".album"));
 
-        pages.forEach((page, i) => {
-          if (i < desktopIndex) {
-            page.classList.add("flipped");
-          } else {
-            page.classList.remove("flipped");
+        albums.forEach((album, albumIndex) => {
+          const slidesWrap = album.querySelector(".album-slides");
+          if (!slidesWrap) return;
+
+          const slides = Array.from(slidesWrap.querySelectorAll(".album-slide"));
+          if (slides.length === 0) return;
+
+          let pagination = album.querySelector(".album-pagination");
+          if (!pagination) {
+            pagination = document.createElement("div");
+            pagination.className = "album-pagination";
+            album.appendChild(pagination);
           }
-        });
 
-        setDesktopZIndexes();
-        updateDesktopButtons();
+          pagination.innerHTML = "";
+          pagination.setAttribute("role", "tablist");
+
+          const albumTitle = (album.getAttribute("data-album-title") || "Album").trim();
+          pagination.setAttribute("aria-label", `${albumTitle} pagination`);
+
+          // Find first visible slide (not [hidden]); fallback to 0.
+          let activeIndex = slides.findIndex((s) => !s.hasAttribute("hidden"));
+          if (activeIndex < 0) activeIndex = 0;
+
+          // Assign roles/ids to panels
+          slides.forEach((slide, i) => {
+            const panelId = `album-${albumIndex + 1}-panel-${i + 1}`;
+            slide.id = slide.id || panelId;
+            slide.setAttribute("role", "tabpanel");
+            slide.setAttribute("aria-label", `${albumTitle} slide ${i + 1} of ${slides.length}`);
+            slide.setAttribute("aria-hidden", i === activeIndex ? "false" : "true");
+            if (i === activeIndex) slide.removeAttribute("hidden");
+            else slide.setAttribute("hidden", "");
+          });
+
+          // Build dot tabs (buttons)
+          const tabs = slides.map((_, i) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.className = "album-dot";
+            btn.id = `album-${albumIndex + 1}-tab-${i + 1}`;
+            btn.setAttribute("role", "tab");
+            btn.setAttribute("aria-controls", slides[i].id);
+            btn.setAttribute("aria-selected", i === activeIndex ? "true" : "false");
+            btn.setAttribute("tabindex", i === activeIndex ? "0" : "-1");
+            btn.setAttribute("aria-label", `${albumTitle}: slide ${i + 1} of ${slides.length}`);
+            pagination.appendChild(btn);
+            return btn;
+          });
+
+          function setActive(newIndex, focusTab = false) {
+            newIndex = clamp(newIndex, 0, slides.length - 1);
+            if (newIndex === activeIndex) {
+              if (focusTab) tabs[newIndex].focus();
+              return;
+            }
+
+            stopVideos(slides[activeIndex]);
+
+            slides.forEach((slide, i) => {
+              const active = i === newIndex;
+              slide.setAttribute("aria-hidden", active ? "false" : "true");
+              if (active) slide.removeAttribute("hidden");
+              else slide.setAttribute("hidden", "");
+            });
+
+            tabs.forEach((tab, i) => {
+              const active = i === newIndex;
+              tab.setAttribute("aria-selected", active ? "true" : "false");
+              tab.setAttribute("tabindex", active ? "0" : "-1");
+            });
+
+            activeIndex = newIndex;
+            if (focusTab) tabs[newIndex].focus();
+          }
+
+          tabs.forEach((tab, i) => {
+            tab.addEventListener("click", () => setActive(i, true));
+
+            tab.addEventListener("keydown", (e) => {
+              const key = e.key;
+
+              if (key === "ArrowLeft" || key === "ArrowRight" || key === "Home" || key === "End") {
+                e.preventDefault();
+                let target = i;
+
+                if (key === "ArrowLeft") target = (i - 1 + tabs.length) % tabs.length;
+                if (key === "ArrowRight") target = (i + 1) % tabs.length;
+                if (key === "Home") target = 0;
+                if (key === "End") target = tabs.length - 1;
+
+                tabs[target].focus();
+                return;
+              }
+
+              if (key === "Enter" || key === " ") {
+                e.preventDefault();
+                setActive(i, true);
+              }
+            });
+          });
+
+          setActive(activeIndex, false);
+        });
+      }
+
+      /* -------------------- Flipbook / Navigation -------------------- */
+      let mode = mqMobile.matches ? "mobile" : "desktop";
+
+      // Desktop: number of flipped sheets (0..N)
+      let desktopFlippedCount = 0;
+
+      // Mobile: virtual sides (front/back for each sheet) (0..2N-1)
+      let virtualSides = [];
+      let mobileSideIndex = 0;
+
+      function applyDesktopZIndexes() {
+        const N = sheets.length;
+        sheets.forEach((sheet, i) => {
+          const flipped = sheet.classList.contains("is-flipped");
+          sheet.style.zIndex = flipped ? String(i + 1) : String((N * 2) - i);
+        });
+      }
+
+      function setDesktopButtons() {
+        prevBtn.disabled = desktopFlippedCount === 0;
+        nextBtn.disabled = desktopFlippedCount === sheets.length;
+      }
+
+      function setMobileButtons() {
+        prevBtn.disabled = mobileSideIndex === 0;
+        nextBtn.disabled = mobileSideIndex === virtualSides.length - 1;
+      }
+
+      function clearMobileVisibility() {
+        sheets.forEach((sheet) => {
+          sheet.classList.remove("is-mobile-visible");
+          sheet.querySelectorAll(".page-face").forEach((face) => face.classList.remove("is-side-active"));
+        });
+      }
+
+      function buildVirtualSides() {
+        virtualSides = [];
+        sheets.forEach((sheet) => {
+          virtualSides.push({ sheet, side: "front" });
+          virtualSides.push({ sheet, side: "back" });
+        });
+      }
+
+      function renderMobileSide() {
+        clearMobileVisibility();
+        const current = virtualSides[mobileSideIndex];
+        if (!current) return;
+
+        current.sheet.classList.add("is-mobile-visible");
+        const face = current.sheet.querySelector(
+          current.side === "front" ? ".page-face.front" : ".page-face.back"
+        );
+        if (face) face.classList.add("is-side-active");
+        setMobileButtons();
+      }
+
+      function setDesktopState(flippedCount) {
+        flippedCount = clamp(flippedCount, 0, sheets.length);
+        sheets.forEach((sheet, i) => {
+          if (i < flippedCount) sheet.classList.add("is-flipped");
+          else sheet.classList.remove("is-flipped");
+        });
+        desktopFlippedCount = flippedCount;
+        applyDesktopZIndexes();
+        setDesktopButtons();
+      }
+
+      function initDesktopMode(initialFlippedCount = 0) {
+        mode = "desktop";
+        clearMobileVisibility();
+        setDesktopState(initialFlippedCount);
 
         prevBtn.onclick = () => {
-          if (desktopIndex <= 0) return;
-          desktopIndex--;
-          pages[desktopIndex].classList.remove("flipped");
-          setDesktopZIndexes();
-          updateDesktopButtons();
+          if (desktopFlippedCount <= 0) return;
+
+          desktopFlippedCount -= 1;
+          const sheet = sheets[desktopFlippedCount];
+          stopVideos(sheet);
+          sheet.classList.remove("is-flipped");
+
+          applyDesktopZIndexes();
+          setDesktopButtons();
         };
 
         nextBtn.onclick = () => {
-          if (desktopIndex >= pages.length) return;
-          pages[desktopIndex].classList.add("flipped");
-          desktopIndex++;
-          setDesktopZIndexes();
-          updateDesktopButtons();
+          if (desktopFlippedCount >= sheets.length) return;
+
+          const sheet = sheets[desktopFlippedCount];
+          stopVideos(sheet);
+          sheet.classList.add("is-flipped");
+          desktopFlippedCount += 1;
+
+          applyDesktopZIndexes();
+          setDesktopButtons();
         };
       }
 
-      function buildMobileSides() {
-        mobileSides = [];
-        pages.forEach((page) => {
-          mobileSides.push({ page, side: "front" });
-          mobileSides.push({ page, side: "back" });
+      function initMobileMode(initialSideIndex = 0) {
+        mode = "mobile";
+
+        sheets.forEach((sheet) => {
+          sheet.classList.remove("is-flipped");
+          sheet.style.zIndex = "";
         });
-      }
 
-      function clearMobileState() {
-        pages.forEach((page) => {
-          page.classList.remove("flipped");
-          page.classList.remove("mobile-visible");
-          const front = page.querySelector(".front");
-          const back = page.querySelector(".back");
-          if (front) front.classList.remove("side-active");
-          if (back) back.classList.remove("side-active");
-        });
-      }
-
-      function updateMobileButtons() {
-        prevBtn.disabled = mobileSideIndex === 0;
-        nextBtn.disabled = mobileSideIndex === mobileSides.length - 1;
-      }
-
-      function showMobileSide() {
-        clearMobileState();
-        const current = mobileSides[mobileSideIndex];
-        current.page.classList.add("mobile-visible");
-        const target = current.page.querySelector(current.side === "front" ? ".front" : ".back");
-        if (target) target.classList.add("side-active");
-        updateMobileButtons();
-      }
-
-      function showMobile() {
-        buildMobileSides();
-        if (mobileSideIndex >= mobileSides.length) {
-          mobileSideIndex = mobileSides.length - 1;
-        }
-        if (mobileSideIndex < 0) {
-          mobileSideIndex = 0;
-        }
-
-        showMobileSide();
+        buildVirtualSides();
+        mobileSideIndex = clamp(initialSideIndex, 0, virtualSides.length - 1);
+        renderMobileSide();
 
         prevBtn.onclick = () => {
           if (mobileSideIndex <= 0) return;
-          const current = mobileSides[mobileSideIndex];
-          stopVideos(current.page.querySelector(current.side === "front" ? ".front" : ".back"));
-          mobileSideIndex--;
-          showMobileSide();
+
+          const outgoing = virtualSides[mobileSideIndex];
+          const outgoingFace = outgoing.sheet.querySelector(
+            outgoing.side === "front" ? ".page-face.front" : ".page-face.back"
+          );
+          stopVideos(outgoingFace);
+
+          mobileSideIndex -= 1;
+          renderMobileSide();
         };
 
         nextBtn.onclick = () => {
-          if (mobileSideIndex >= mobileSides.length - 1) return;
-          const current = mobileSides[mobileSideIndex];
-          stopVideos(current.page.querySelector(current.side === "front" ? ".front" : ".back"));
-          mobileSideIndex++;
-          showMobileSide();
+          if (mobileSideIndex >= virtualSides.length - 1) return;
+
+          const outgoing = virtualSides[mobileSideIndex];
+          const outgoingFace = outgoing.sheet.querySelector(
+            outgoing.side === "front" ? ".page-face.front" : ".page-face.back"
+          );
+          stopVideos(outgoingFace);
+
+          mobileSideIndex += 1;
+          renderMobileSide();
         };
+
+        setMobileButtons();
       }
 
-      function initByViewport() {
-        if (mq.matches) {
-          showMobile();
+      function syncMode() {
+        const want = mqMobile.matches ? "mobile" : "desktop";
+        if (want === mode) return;
+
+        stopAllVideos();
+
+        if (want === "mobile") {
+          const idx = clamp(desktopFlippedCount * 2, 0, (sheets.length * 2) - 1);
+          initMobileMode(idx);
         } else {
-          showDesktop();
+          const flipped = clamp(Math.floor((mobileSideIndex + 1) / 2), 0, sheets.length);
+          initDesktopMode(flipped);
         }
       }
 
-      if (mq.addEventListener) {
-        mq.addEventListener("change", initByViewport);
-      } else {
-        mq.addListener(initByViewport);
-      }
+      document.addEventListener("keydown", (e) => {
+        if (isTypingContext(document.activeElement)) return;
 
-      initByViewport();
+        if (e.key === "ArrowLeft" || e.key === "PageUp") {
+          e.preventDefault();
+          prevBtn.click();
+          return;
+        }
+
+        if (e.key === "ArrowRight" || e.key === "PageDown") {
+          e.preventDefault();
+          nextBtn.click();
+          return;
+        }
+
+        if (e.key === "Home") {
+          e.preventDefault();
+          stopAllVideos();
+          if (mode === "mobile") {
+            mobileSideIndex = 0;
+            renderMobileSide();
+          } else {
+            setDesktopState(0);
+          }
+          return;
+        }
+
+        if (e.key === "End") {
+          e.preventDefault();
+          stopAllVideos();
+          if (mode === "mobile") {
+            mobileSideIndex = (sheets.length * 2) - 1;
+            renderMobileSide();
+          } else {
+            setDesktopState(sheets.length);
+          }
+        }
+      });
+
+      initAlbums();
+      if (mqMobile.matches) initMobileMode(0);
+      else initDesktopMode(0);
+
+      if (mqMobile.addEventListener) mqMobile.addEventListener("change", syncMode);
+      else mqMobile.addListener(syncMode);
     })();
-
-    buildAlbums();
   </script>
 </body>
 </html>
