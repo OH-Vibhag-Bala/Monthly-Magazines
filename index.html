@@ -21,49 +21,128 @@
 
     body {
       min-height: 100vh;
-      overflow-y: auto !important;
       overflow-x: hidden !important;
+      overflow-y: auto !important;
       align-items: flex-start !important;
       padding: 20px 12px 90px;
       box-sizing: border-box;
     }
 
     .magazine-container {
-      width: min(100%, 1100px) !important;
+      width: min(100%, 980px) !important;
       height: auto !important;
-      min-height: 600px;
+      min-height: 640px;
       margin: 0 auto;
-      align-items: flex-start !important;
+      display: flex;
+      flex-direction: column;
+      align-items: center !important;
+      justify-content: flex-start !important;
+      padding-bottom: 20px;
     }
 
     .book {
-      width: min(100%, 420px) !important;
-      height: 580px !important;
+      width: 420px !important;
       max-width: 100%;
+      height: 580px !important;
+      position: relative;
+      transform-style: preserve-3d;
     }
 
     .page {
+      width: 100%;
+      height: 100%;
+      position: absolute;
+      inset: 0;
+      transform-origin: left center;
+      transform-style: preserve-3d;
+      transition: transform 0.9s cubic-bezier(0.645, 0.045, 0.355, 1);
+      background-color: white;
+      border-radius: 0 8px 8px 0;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
       overflow: hidden;
+    }
+
+    .page.flipped {
+      transform: rotateY(-180deg);
     }
 
     .front,
     .back {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      padding: 16px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      border: 1px solid #ddd;
+      background-color: var(--bg-color);
       overflow: hidden;
+    }
+
+    .front {
+      z-index: 2;
+      border-radius: 0 8px 8px 0;
+    }
+
+    .back {
+      transform: rotateY(180deg);
+      z-index: 1;
+      border-radius: 8px 0 0 8px;
+      background: linear-gradient(to right, #e3dac9, #fffdd0);
+    }
+
+    .cover-design {
+      text-align: center;
+      width: 100%;
+      height: 100%;
+      border: 5px solid var(--primary-color);
+      padding: 10px;
+      border-radius: 6px;
+      background: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .cover-img {
+      width: 100%;
+      height: auto;
+      max-height: 310px;
+      object-fit: contain !important;
+      border-radius: 5px;
+      margin-bottom: 12px;
+      border: 2px solid var(--accent-color);
+      background: #fff;
+      flex: 0 0 auto;
+    }
+
+    .magazine-title {
+      margin: 8px 0;
     }
 
     .page-content {
       position: relative;
       width: 100%;
       height: 100%;
+      border: 2px double var(--primary-color);
+      padding: 16px 16px 34px;
+      text-align: center;
       overflow-y: auto;
       overflow-x: hidden;
-      padding: 18px;
       box-sizing: border-box;
+      scrollbar-width: thin;
     }
 
     .page-number {
       position: absolute;
-      bottom: 10px;
+      bottom: 8px;
       right: 12px;
       font-size: 12px;
       opacity: 0.75;
@@ -73,32 +152,24 @@
       margin-top: 0;
     }
 
+    .activities p {
+      margin-bottom: 10px;
+    }
+
     .activities ul {
       margin: 8px 0 0;
-      padding-left: 18px;
+      padding-left: 20px;
       text-align: left;
+      line-height: 1.45;
     }
 
-    .activities .ornament {
-      margin-top: 14px;
-    }
-
-    .cover-design {
-      overflow-y: auto;
-    }
-
-    .cover-img {
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-      max-height: 320px;
-      object-fit: contain !important;
-      background: #fff;
+    .activities li {
+      margin-bottom: 8px;
     }
 
     .album {
-      margin-top: 12px;
       width: 100%;
+      margin-top: 10px;
     }
 
     .album-slides {
@@ -136,23 +207,13 @@
       background: #fff;
     }
 
-    .album-slide video {
-      max-width: 100%;
-    }
-
     .album-pagination {
       display: flex;
       gap: 8px;
       justify-content: center;
-      margin-top: 10px;
       align-items: center;
       flex-wrap: wrap;
-    }
-
-    .album-pagination input[type="radio"] {
-      position: absolute;
-      opacity: 0;
-      pointer-events: none;
+      margin-top: 10px;
     }
 
     .album-dot {
@@ -160,9 +221,11 @@
       height: 12px;
       border-radius: 999px;
       border: 2px solid #333;
+      background: transparent;
       cursor: pointer;
       display: inline-block;
-      background: transparent;
+      padding: 0;
+      margin: 0;
       flex: 0 0 auto;
     }
 
@@ -172,58 +235,59 @@
 
     .album-caption {
       text-align: center;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       margin-top: 8px;
     }
 
     .controls {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 18px !important;
       position: static !important;
+      display: flex !important;
+      justify-content: center;
+      gap: 14px;
+      margin-top: 18px !important;
+      bottom: auto !important;
+      left: auto !important;
+      right: auto !important;
     }
 
     .controls button {
-      padding: 10px 16px;
-      border-radius: 10px;
-      cursor: pointer;
-      min-width: 120px;
+      min-width: 130px;
+      padding: 12px 18px;
+      border-radius: 12px;
+      font-size: 15px;
     }
 
-    a {
-      color: var(--text-color);
-      text-decoration: none;
-      font-weight: bold;
+    .back-cover {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      background-color: #ffebcd;
     }
 
-    a:hover {
-      text-decoration: underline;
-    }
-
-    @media (max-width: 1024px) {
-      .magazine-container {
-        width: min(100%, 950px) !important;
-      }
-
+    @media (max-width: 900px) {
       .book {
-        width: min(100%, 380px) !important;
+        width: 390px !important;
         height: 560px !important;
       }
 
       .album-slides {
         height: 250px;
       }
+
+      .cover-img {
+        max-height: 270px;
+      }
     }
 
     @media (max-width: 768px) {
       body {
-        padding: 12px 10px 90px;
+        padding: 12px 10px 88px;
       }
 
       .magazine-container {
-        padding-bottom: 84px !important;
         width: 100% !important;
+        min-height: auto;
+        padding-bottom: 74px !important;
       }
 
       .book {
@@ -237,52 +301,54 @@
         position: relative !important;
         width: 100% !important;
         height: auto !important;
+        min-height: 0 !important;
         transform: none !important;
         box-shadow: none !important;
-        border-radius: 12px;
-        margin-bottom: 16px;
+        border-radius: 12px !important;
+        margin-bottom: 0;
+        display: none;
       }
 
-      .page .front,
-      .page .back {
+      .page.mobile-visible {
+        display: block !important;
+      }
+
+      .front,
+      .back {
         position: relative !important;
+        inset: auto !important;
         width: 100% !important;
         height: auto !important;
-        min-height: calc(100vh - 150px);
+        min-height: calc(100vh - 170px);
         transform: none !important;
         backface-visibility: visible !important;
         display: none !important;
-        padding: 14px !important;
+        border-radius: 12px !important;
+        padding: 12px !important;
       }
 
-      .page .front.side-active,
-      .page .back.side-active {
-        display: block !important;
+      .front.side-active,
+      .back.side-active {
+        display: flex !important;
       }
 
       .page-content {
         height: auto !important;
-        min-height: calc(100vh - 190px);
-        max-height: none !important;
-        overflow: visible !important;
-        padding: 14px;
+        min-height: calc(100vh - 210px);
+        overflow-y: auto !important;
       }
 
       .cover-design {
         height: auto !important;
-        min-height: calc(100vh - 190px);
+        min-height: calc(100vh - 210px);
       }
 
       .cover-img {
         max-height: 240px;
       }
 
-      .magazine-title {
-        font-size: 1.35rem !important;
-      }
-
       .album-slides {
-        height: 240px;
+        height: 220px;
       }
 
       .controls {
@@ -292,22 +358,18 @@
         bottom: 0 !important;
         margin: 0 !important;
         padding: 10px 12px !important;
-        display: flex !important;
-        gap: 12px !important;
-        justify-content: space-between !important;
-        background: rgba(255, 255, 255, 0.94) !important;
+        background: rgba(255, 255, 255, 0.95) !important;
         backdrop-filter: blur(6px);
+        box-shadow: 0 -4px 18px rgba(0, 0, 0, 0.1);
         z-index: 9999 !important;
-        box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.08);
+        justify-content: space-between !important;
       }
 
       .controls button {
         flex: 1 1 0 !important;
-        width: 50% !important;
         min-width: 0 !important;
-        font-size: 16px !important;
+        width: 50% !important;
         padding: 12px 10px !important;
-        border-radius: 12px !important;
       }
     }
 
@@ -317,34 +379,25 @@
         padding-right: 8px;
       }
 
-      .front,
-      .back {
-        padding: 10px !important;
+      .page-content {
+        padding: 12px 12px 32px;
       }
 
-      .page-content {
-        padding: 12px !important;
+      .cover-img {
+        max-height: 210px;
       }
 
       .album-slides {
-        height: 210px;
+        height: 200px;
       }
 
       .album-caption {
-        font-size: 0.85rem;
-      }
-
-      .page-number {
-        font-size: 11px;
-      }
-
-      .hss-branding {
-        font-size: 1rem;
+        font-size: 0.84rem;
       }
 
       .magazine-title {
         font-size: 1.15rem !important;
-        line-height: 1.25;
+        line-height: 1.2;
       }
     }
   </style>
@@ -365,6 +418,7 @@
             <p class="edition-text">An Initiative of HSSUS.ORG</p>
           </div>
         </div>
+
         <div class="back">
           <div class="page-content activities">
             <h2>Gajanan Shakha</h2>
@@ -379,14 +433,7 @@
                 </div>
               </div>
 
-              <div class="album-pagination" role="radiogroup" aria-label="Gajanan Shakha album intro">
-                <input type="radio" id="gajananintro-r1" name="album-gajananintro" checked />
-                <label class="album-dot active" for="gajananintro-r1" aria-label="Slide 1"></label>
-
-                <input type="radio" id="gajananintro-r2" name="album-gajananintro" />
-                <label class="album-dot" for="gajananintro-r2" aria-label="Slide 2"></label>
-              </div>
-
+              <div class="album-pagination" aria-label="Gajanan intro album"></div>
               <div class="album-caption">Tap the dots to switch photos/videos</div>
             </div>
 
@@ -403,76 +450,20 @@
 
             <div class="album" data-album="gajanan">
               <div class="album-slides">
-                <div class="album-slide active">
-                  <img loading="lazy" src="gajanan001.jpg" alt="Gajanan Shakha media 1" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="gajanan002.jpg" alt="Gajanan Shakha media 2" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="gajanan003.jpg" alt="Gajanan Shakha media 3" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="gajanan004.jpg" alt="Gajanan Shakha media 4" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="gajanan005.jpg" alt="Gajanan Shakha media 5" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="gajanan006.jpg" alt="Gajanan Shakha media 6" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="gajanan007.jpg" alt="Gajanan Shakha media 7" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="gajanan008.jpg" alt="Gajanan Shakha media 8" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="gajanan009.jpg" alt="Gajanan Shakha media 9" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="gajanan010.jpg" alt="Gajanan Shakha media 10" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="gajanan011.jpg" alt="Gajanan Shakha media 11" />
-                </div>
+                <div class="album-slide active"><img loading="lazy" src="gajanan001.jpg" alt="Gajanan Shakha media 1" /></div>
+                <div class="album-slide"><img loading="lazy" src="gajanan002.jpg" alt="Gajanan Shakha media 2" /></div>
+                <div class="album-slide"><img loading="lazy" src="gajanan003.jpg" alt="Gajanan Shakha media 3" /></div>
+                <div class="album-slide"><img loading="lazy" src="gajanan004.jpg" alt="Gajanan Shakha media 4" /></div>
+                <div class="album-slide"><img loading="lazy" src="gajanan005.jpg" alt="Gajanan Shakha media 5" /></div>
+                <div class="album-slide"><img loading="lazy" src="gajanan006.jpg" alt="Gajanan Shakha media 6" /></div>
+                <div class="album-slide"><img loading="lazy" src="gajanan007.jpg" alt="Gajanan Shakha media 7" /></div>
+                <div class="album-slide"><img loading="lazy" src="gajanan008.jpg" alt="Gajanan Shakha media 8" /></div>
+                <div class="album-slide"><img loading="lazy" src="gajanan009.jpg" alt="Gajanan Shakha media 9" /></div>
+                <div class="album-slide"><img loading="lazy" src="gajanan010.jpg" alt="Gajanan Shakha media 10" /></div>
+                <div class="album-slide"><img loading="lazy" src="gajanan011.jpg" alt="Gajanan Shakha media 11" /></div>
               </div>
 
-              <div class="album-pagination" role="radiogroup" aria-label="Gajanan Shakha album">
-                <input type="radio" id="gajanan-r1" name="album-gajanan" checked />
-                <label class="album-dot active" for="gajanan-r1" aria-label="Slide 1"></label>
-
-                <input type="radio" id="gajanan-r2" name="album-gajanan" />
-                <label class="album-dot" for="gajanan-r2" aria-label="Slide 2"></label>
-
-                <input type="radio" id="gajanan-r3" name="album-gajanan" />
-                <label class="album-dot" for="gajanan-r3" aria-label="Slide 3"></label>
-
-                <input type="radio" id="gajanan-r4" name="album-gajanan" />
-                <label class="album-dot" for="gajanan-r4" aria-label="Slide 4"></label>
-
-                <input type="radio" id="gajanan-r5" name="album-gajanan" />
-                <label class="album-dot" for="gajanan-r5" aria-label="Slide 5"></label>
-
-                <input type="radio" id="gajanan-r6" name="album-gajanan" />
-                <label class="album-dot" for="gajanan-r6" aria-label="Slide 6"></label>
-
-                <input type="radio" id="gajanan-r7" name="album-gajanan" />
-                <label class="album-dot" for="gajanan-r7" aria-label="Slide 7"></label>
-
-                <input type="radio" id="gajanan-r8" name="album-gajanan" />
-                <label class="album-dot" for="gajanan-r8" aria-label="Slide 8"></label>
-
-                <input type="radio" id="gajanan-r9" name="album-gajanan" />
-                <label class="album-dot" for="gajanan-r9" aria-label="Slide 9"></label>
-
-                <input type="radio" id="gajanan-r10" name="album-gajanan" />
-                <label class="album-dot" for="gajanan-r10" aria-label="Slide 10"></label>
-
-                <input type="radio" id="gajanan-r11" name="album-gajanan" />
-                <label class="album-dot" for="gajanan-r11" aria-label="Slide 11"></label>
-              </div>
-
+              <div class="album-pagination" aria-label="Gajanan album"></div>
               <div class="album-caption">Tap the dots to switch photos/videos</div>
             </div>
 
@@ -489,10 +480,9 @@
               <li>Celebrated Makar-Sankranti Utsav.</li>
               <li>Craft activity showing kite flying tradition.</li>
               <li>Played new games, practised Yoga and Pranayam.</li>
-              <li>Balas lead Amrutvachan and Subhashitam.</li>
-              <li>During Baudhik, balas learned from our Balagokulam book and showed a great interest in stories of Abhimanyu and Hanumanji.</li>
+              <li>Balas led Amrutvachan and Subhashitam.</li>
+              <li>During Baudhik, balas learned from our Balagokulam book and showed great interest in stories of Abhimanyu and Hanumanji.</li>
             </ul>
-            <div class="ornament"></div>
             <div class="page-number">4</div>
           </div>
         </div>
@@ -520,17 +510,7 @@
                 </div>
               </div>
 
-              <div class="album-pagination" role="radiogroup" aria-label="Kartikeya Shakha album">
-                <input type="radio" id="kartikeya-r1" name="album-kartikeya" checked />
-                <label class="album-dot active" for="kartikeya-r1" aria-label="Slide 1"></label>
-
-                <input type="radio" id="kartikeya-r2" name="album-kartikeya" />
-                <label class="album-dot" for="kartikeya-r2" aria-label="Slide 2"></label>
-
-                <input type="radio" id="kartikeya-r3" name="album-kartikeya" />
-                <label class="album-dot" for="kartikeya-r3" aria-label="Slide 3"></label>
-              </div>
-
+              <div class="album-pagination" aria-label="Kartikeya album"></div>
               <div class="album-caption">Tap the dots to switch photos/videos</div>
             </div>
 
@@ -549,7 +529,6 @@
               <li>A few performed Carnatic kirtanas.</li>
               <li>Conducted a craft activity creating Goddess Saraswati pictures using cards.</li>
             </ul>
-            <div class="ornament"></div>
             <div class="page-number">6</div>
           </div>
         </div>
@@ -563,28 +542,12 @@
 
             <div class="album" data-album="pratap">
               <div class="album-slides">
-                <div class="album-slide active">
-                  <img loading="lazy" src="pratap001.JPG" alt="Pratap Shakha media 1" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="pratap002.JPG" alt="Pratap Shakha media 2" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="pratap003.JPG" alt="Pratap Shakha media 3" />
-                </div>
+                <div class="album-slide active"><img loading="lazy" src="pratap001.JPG" alt="Pratap Shakha media 1" /></div>
+                <div class="album-slide"><img loading="lazy" src="pratap002.JPG" alt="Pratap Shakha media 2" /></div>
+                <div class="album-slide"><img loading="lazy" src="pratap003.JPG" alt="Pratap Shakha media 3" /></div>
               </div>
 
-              <div class="album-pagination" role="radiogroup" aria-label="Pratap Shakha album">
-                <input type="radio" id="pratap-r1" name="album-pratap" checked />
-                <label class="album-dot active" for="pratap-r1" aria-label="Slide 1"></label>
-
-                <input type="radio" id="pratap-r2" name="album-pratap" />
-                <label class="album-dot" for="pratap-r2" aria-label="Slide 2"></label>
-
-                <input type="radio" id="pratap-r3" name="album-pratap" />
-                <label class="album-dot" for="pratap-r3" aria-label="Slide 3"></label>
-              </div>
-
+              <div class="album-pagination" aria-label="Pratap album"></div>
               <div class="album-caption">Tap the dots to switch photos/videos</div>
             </div>
 
@@ -600,7 +563,6 @@
               <li>Conducted Sankranthi Shakha kids craft.</li>
               <li>Concluded SNY in our Shakha (Pushpak Shakha Dayton) and issued participation certificates to all Balas.</li>
             </ul>
-            <div class="ornament"></div>
             <div class="page-number">8</div>
           </div>
         </div>
@@ -614,28 +576,12 @@
 
             <div class="album" data-album="pushpak">
               <div class="album-slides">
-                <div class="album-slide active">
-                  <img loading="lazy" src="pushpak001.jpg" alt="Pushpak Shakha media 1" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="pushpak002.jpg" alt="Pushpak Shakha media 2" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="pushpak003.jpg" alt="Pushpak Shakha media 3" />
-                </div>
+                <div class="album-slide active"><img loading="lazy" src="pushpak001.jpg" alt="Pushpak Shakha media 1" /></div>
+                <div class="album-slide"><img loading="lazy" src="pushpak002.jpg" alt="Pushpak Shakha media 2" /></div>
+                <div class="album-slide"><img loading="lazy" src="pushpak003.jpg" alt="Pushpak Shakha media 3" /></div>
               </div>
 
-              <div class="album-pagination" role="radiogroup" aria-label="Pushpak Shakha album">
-                <input type="radio" id="pushpak-r1" name="album-pushpak" checked />
-                <label class="album-dot active" for="pushpak-r1" aria-label="Slide 1"></label>
-
-                <input type="radio" id="pushpak-r2" name="album-pushpak" />
-                <label class="album-dot" for="pushpak-r2" aria-label="Slide 2"></label>
-
-                <input type="radio" id="pushpak-r3" name="album-pushpak" />
-                <label class="album-dot" for="pushpak-r3" aria-label="Slide 3"></label>
-              </div>
-
+              <div class="album-pagination" aria-label="Pushpak album"></div>
               <div class="album-caption">Tap the dots to switch photos/videos</div>
             </div>
 
@@ -648,10 +594,9 @@
             <h2>Saraswati Shakha</h2>
             <p>On the second Sunday of February, Bala-focused activities were conducted.</p>
             <ul>
-              <li>Bala led a few games, and we were impressed to see him conduct them confidently—at times even better than some Kishores.</li>
+              <li>Bala led a few games, and we were impressed to see him conduct them confidently at times even better than some Kishores.</li>
               <li>A paper airplane-making competition was also organized.</li>
             </ul>
-            <div class="ornament"></div>
             <div class="page-number">10</div>
           </div>
         </div>
@@ -665,12 +610,8 @@
 
             <div class="album" data-album="saraswati">
               <div class="album-slides">
-                <div class="album-slide active">
-                  <img loading="lazy" src="saraswati001.jpg" alt="Saraswati Shakha media 1" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="saraswati002.jpg" alt="Saraswati Shakha media 2" />
-                </div>
+                <div class="album-slide active"><img loading="lazy" src="saraswati001.jpg" alt="Saraswati Shakha media 1" /></div>
+                <div class="album-slide"><img loading="lazy" src="saraswati002.jpg" alt="Saraswati Shakha media 2" /></div>
                 <div class="album-slide">
                   <video controls preload="metadata">
                     <source src="saraswati003.mp4" type="video/mp4" />
@@ -679,17 +620,7 @@
                 </div>
               </div>
 
-              <div class="album-pagination" role="radiogroup" aria-label="Saraswati Shakha album">
-                <input type="radio" id="saraswati-r1" name="album-saraswati" checked />
-                <label class="album-dot active" for="saraswati-r1" aria-label="Slide 1"></label>
-
-                <input type="radio" id="saraswati-r2" name="album-saraswati" />
-                <label class="album-dot" for="saraswati-r2" aria-label="Slide 2"></label>
-
-                <input type="radio" id="saraswati-r3" name="album-saraswati" />
-                <label class="album-dot" for="saraswati-r3" aria-label="Slide 3"></label>
-              </div>
-
+              <div class="album-pagination" aria-label="Saraswati album"></div>
               <div class="album-caption">Tap the dots to switch photos/videos</div>
             </div>
 
@@ -708,7 +639,6 @@
               <li>Celebrated Basant Panchami Utsav.</li>
               <li>Our talented young Bala and Kishore members showcased their incredible skills, making every moment truly unforgettable.</li>
             </ul>
-            <div class="ornament"></div>
             <div class="page-number">12</div>
           </div>
         </div>
@@ -722,28 +652,12 @@
 
             <div class="album" data-album="sindhu">
               <div class="album-slides">
-                <div class="album-slide active">
-                  <img loading="lazy" src="sindhu001.jpg" alt="Sindhu Shakha media 1" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="sindhu002.jpg" alt="Sindhu Shakha media 2" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="sindhu003.jpg" alt="Sindhu Shakha media 3" />
-                </div>
+                <div class="album-slide active"><img loading="lazy" src="sindhu001.jpg" alt="Sindhu Shakha media 1" /></div>
+                <div class="album-slide"><img loading="lazy" src="sindhu002.jpg" alt="Sindhu Shakha media 2" /></div>
+                <div class="album-slide"><img loading="lazy" src="sindhu003.jpg" alt="Sindhu Shakha media 3" /></div>
               </div>
 
-              <div class="album-pagination" role="radiogroup" aria-label="Sindhu Shakha album">
-                <input type="radio" id="sindhu-r1" name="album-sindhu" checked />
-                <label class="album-dot active" for="sindhu-r1" aria-label="Slide 1"></label>
-
-                <input type="radio" id="sindhu-r2" name="album-sindhu" />
-                <label class="album-dot" for="sindhu-r2" aria-label="Slide 2"></label>
-
-                <input type="radio" id="sindhu-r3" name="album-sindhu" />
-                <label class="album-dot" for="sindhu-r3" aria-label="Slide 3"></label>
-              </div>
-
+              <div class="album-pagination" aria-label="Sindhu album"></div>
               <div class="album-caption">Tap the dots to switch photos/videos</div>
             </div>
 
@@ -760,7 +674,6 @@
               <li>There was a good Bala turnout on the day of the utsav; the children participated in various games and thoroughly enjoyed themselves.</li>
               <li>During the Baudhik, the children learned about the significance of Makara Sankranti and how it is celebrated across India.</li>
             </ul>
-            <div class="ornament"></div>
             <div class="page-number">14</div>
           </div>
         </div>
@@ -772,30 +685,14 @@
           <div class="page-content">
             <h2>Bharati Shakha</h2>
 
-            <div class="album" data-album="bharatiya">
+            <div class="album" data-album="bharati">
               <div class="album-slides">
-                <div class="album-slide active">
-                  <img loading="lazy" src="Bharati001.jpg" alt="Bharati Shakha media 1" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="Bharati002.jpeg" alt="Bharati Shakha media 2" />
-                </div>
-                <div class="album-slide">
-                  <img loading="lazy" src="Bharati003.jpg" alt="Bharati Shakha media 3" />
-                </div>
+                <div class="album-slide active"><img loading="lazy" src="Bharati001.jpg" alt="Bharati Shakha media 1" /></div>
+                <div class="album-slide"><img loading="lazy" src="Bharati002.jpeg" alt="Bharati Shakha media 2" /></div>
+                <div class="album-slide"><img loading="lazy" src="Bharati003.jpg" alt="Bharati Shakha media 3" /></div>
               </div>
 
-              <div class="album-pagination" role="radiogroup" aria-label="Bharati Shakha album">
-                <input type="radio" id="bharatiya-r1" name="album-bharatiya" checked />
-                <label class="album-dot active" for="bharatiya-r1" aria-label="Slide 1"></label>
-
-                <input type="radio" id="bharatiya-r2" name="album-bharatiya" />
-                <label class="album-dot" for="bharatiya-r2" aria-label="Slide 2"></label>
-
-                <input type="radio" id="bharatiya-r3" name="album-bharatiya" />
-                <label class="album-dot" for="bharatiya-r3" aria-label="Slide 3"></label>
-              </div>
-
+              <div class="album-pagination" aria-label="Bharati album"></div>
               <div class="album-caption">Tap the dots to switch photos/videos</div>
             </div>
 
@@ -830,158 +727,179 @@
   <script>
     function stopVideos(root) {
       if (!root) return;
-      root.querySelectorAll("video").forEach(v => {
+      root.querySelectorAll("video").forEach((video) => {
         try {
-          v.pause();
-          v.currentTime = 0;
-        } catch (_) {}
+          video.pause();
+          video.currentTime = 0;
+        } catch (e) {}
       });
     }
 
-    (function initAlbums() {
-      const albums = Array.from(document.querySelectorAll(".album"));
+    function buildAlbums() {
+      const albums = document.querySelectorAll(".album");
 
-      albums.forEach(album => {
-        const radios = Array.from(album.querySelectorAll('input[type="radio"]'));
-        const dots = Array.from(album.querySelectorAll(".album-dot"));
+      albums.forEach((album) => {
         const slides = Array.from(album.querySelectorAll(".album-slide"));
+        const pagination = album.querySelector(".album-pagination");
+        let currentIndex = 0;
 
-        function show(index) {
-          slides.forEach((s, i) => {
-            if (i !== index) stopVideos(s);
-            s.classList.toggle("active", i === index);
+        pagination.innerHTML = "";
+
+        slides.forEach((slide, index) => {
+          const dot = document.createElement("button");
+          dot.type = "button";
+          dot.className = "album-dot" + (index === 0 ? " active" : "");
+          dot.setAttribute("aria-label", "Slide " + (index + 1));
+          dot.addEventListener("click", () => {
+            showSlide(index);
+          });
+          pagination.appendChild(dot);
+        });
+
+        function showSlide(index) {
+          currentIndex = index;
+          slides.forEach((slide, i) => {
+            if (i !== index) stopVideos(slide);
+            slide.classList.toggle("active", i === index);
           });
 
-          dots.forEach((d, i) => {
-            d.classList.toggle("active", i === index);
-          });
-
-          radios.forEach((r, i) => {
-            r.checked = i === index;
+          const dots = pagination.querySelectorAll(".album-dot");
+          dots.forEach((dot, i) => {
+            dot.classList.toggle("active", i === index);
           });
         }
 
-        radios.forEach((r, i) => {
-          r.addEventListener("change", () => {
-            if (r.checked) show(i);
-          });
-        });
-
-        dots.forEach((dot, i) => {
-          dot.addEventListener("click", () => show(i));
-        });
-
-        const initial = Math.max(0, radios.findIndex(r => r.checked));
-        show(initial === -1 ? 0 : initial);
+        showSlide(currentIndex);
       });
-    })();
+    }
 
     (function initNavigation() {
-      const sheets = Array.from(document.querySelectorAll(".book .page"));
+      const pages = Array.from(document.querySelectorAll(".book .page"));
       const prevBtn = document.getElementById("prev-btn");
       const nextBtn = document.getElementById("next-btn");
       const mq = window.matchMedia("(max-width: 768px)");
 
-      let desktopCurrent = 0;
-      let mobileIndex = 0;
-      let virtualSides = [];
+      let desktopIndex = 0;
+      let mobileSideIndex = 0;
+      let mobileSides = [];
 
-      function buildVirtualSides() {
-        virtualSides = [];
-        sheets.forEach(sheet => {
-          virtualSides.push({ sheet, side: "front" });
-          virtualSides.push({ sheet, side: "back" });
+      function setDesktopZIndexes() {
+        pages.forEach((page, i) => {
+          page.style.zIndex = page.classList.contains("flipped")
+            ? String(i + 1)
+            : String(pages.length - i);
         });
       }
 
-      function applyDesktopZIndex() {
-        sheets.forEach((sheet, i) => {
-          const flipped = sheet.classList.contains("flipped");
-          sheet.style.zIndex = flipped ? String(i + 1) : String(sheets.length - i);
+      function updateDesktopButtons() {
+        prevBtn.disabled = desktopIndex === 0;
+        nextBtn.disabled = desktopIndex === pages.length;
+      }
+
+      function showDesktop() {
+        pages.forEach((page) => {
+          page.style.display = "block";
+          page.classList.remove("mobile-visible");
+          const front = page.querySelector(".front");
+          const back = page.querySelector(".back");
+          if (front) front.classList.remove("side-active");
+          if (back) back.classList.remove("side-active");
+        });
+
+        pages.forEach((page, i) => {
+          if (i < desktopIndex) {
+            page.classList.add("flipped");
+          } else {
+            page.classList.remove("flipped");
+          }
+        });
+
+        setDesktopZIndexes();
+        updateDesktopButtons();
+
+        prevBtn.onclick = () => {
+          if (desktopIndex <= 0) return;
+          desktopIndex--;
+          pages[desktopIndex].classList.remove("flipped");
+          setDesktopZIndexes();
+          updateDesktopButtons();
+        };
+
+        nextBtn.onclick = () => {
+          if (desktopIndex >= pages.length) return;
+          pages[desktopIndex].classList.add("flipped");
+          desktopIndex++;
+          setDesktopZIndexes();
+          updateDesktopButtons();
+        };
+      }
+
+      function buildMobileSides() {
+        mobileSides = [];
+        pages.forEach((page) => {
+          mobileSides.push({ page, side: "front" });
+          mobileSides.push({ page, side: "back" });
         });
       }
 
-      function setDesktopButtons() {
-        prevBtn.disabled = desktopCurrent === 0;
-        nextBtn.disabled = desktopCurrent === sheets.length;
-      }
-
-      function setMobileButtons() {
-        prevBtn.disabled = mobileIndex === 0;
-        nextBtn.disabled = mobileIndex === virtualSides.length - 1;
-      }
-
-      function clearMobileSideVisibility() {
-        sheets.forEach(sheet => {
-          sheet.classList.remove("flipped");
-          const front = sheet.querySelector(".front");
-          const back = sheet.querySelector(".back");
+      function clearMobileState() {
+        pages.forEach((page) => {
+          page.classList.remove("flipped");
+          page.classList.remove("mobile-visible");
+          const front = page.querySelector(".front");
+          const back = page.querySelector(".back");
           if (front) front.classList.remove("side-active");
           if (back) back.classList.remove("side-active");
         });
       }
 
-      function renderMobile() {
-        clearMobileSideVisibility();
-        const current = virtualSides[mobileIndex];
-        const el = current.sheet.querySelector(current.side === "front" ? ".front" : ".back");
-        if (el) el.classList.add("side-active");
-        setMobileButtons();
+      function updateMobileButtons() {
+        prevBtn.disabled = mobileSideIndex === 0;
+        nextBtn.disabled = mobileSideIndex === mobileSides.length - 1;
       }
 
-      function initDesktopMode() {
-        clearMobileSideVisibility();
-        sheets.forEach(sheet => sheet.classList.remove("flipped"));
-        desktopCurrent = 0;
+      function showMobileSide() {
+        clearMobileState();
+        const current = mobileSides[mobileSideIndex];
+        current.page.classList.add("mobile-visible");
+        const target = current.page.querySelector(current.side === "front" ? ".front" : ".back");
+        if (target) target.classList.add("side-active");
+        updateMobileButtons();
+      }
+
+      function showMobile() {
+        buildMobileSides();
+        if (mobileSideIndex >= mobileSides.length) {
+          mobileSideIndex = mobileSides.length - 1;
+        }
+        if (mobileSideIndex < 0) {
+          mobileSideIndex = 0;
+        }
+
+        showMobileSide();
 
         prevBtn.onclick = () => {
-          if (desktopCurrent <= 0) return;
-          desktopCurrent -= 1;
-          sheets[desktopCurrent].classList.remove("flipped");
-          applyDesktopZIndex();
-          setDesktopButtons();
+          if (mobileSideIndex <= 0) return;
+          const current = mobileSides[mobileSideIndex];
+          stopVideos(current.page.querySelector(current.side === "front" ? ".front" : ".back"));
+          mobileSideIndex--;
+          showMobileSide();
         };
 
         nextBtn.onclick = () => {
-          if (desktopCurrent >= sheets.length) return;
-          sheets[desktopCurrent].classList.add("flipped");
-          desktopCurrent += 1;
-          applyDesktopZIndex();
-          setDesktopButtons();
-        };
-
-        applyDesktopZIndex();
-        setDesktopButtons();
-      }
-
-      function initMobileMode() {
-        sheets.forEach(sheet => sheet.classList.remove("flipped"));
-        buildVirtualSides();
-        mobileIndex = 0;
-        renderMobile();
-
-        prevBtn.onclick = () => {
-          if (mobileIndex <= 0) return;
-          const cur = virtualSides[mobileIndex];
-          stopVideos(cur.sheet.querySelector(cur.side === "front" ? ".front" : ".back"));
-          mobileIndex -= 1;
-          renderMobile();
-        };
-
-        nextBtn.onclick = () => {
-          if (mobileIndex >= virtualSides.length - 1) return;
-          const cur = virtualSides[mobileIndex];
-          stopVideos(cur.sheet.querySelector(cur.side === "front" ? ".front" : ".back"));
-          mobileIndex += 1;
-          renderMobile();
+          if (mobileSideIndex >= mobileSides.length - 1) return;
+          const current = mobileSides[mobileSideIndex];
+          stopVideos(current.page.querySelector(current.side === "front" ? ".front" : ".back"));
+          mobileSideIndex++;
+          showMobileSide();
         };
       }
 
       function initByViewport() {
         if (mq.matches) {
-          initMobileMode();
+          showMobile();
         } else {
-          initDesktopMode();
+          showDesktop();
         }
       }
 
@@ -993,6 +911,8 @@
 
       initByViewport();
     })();
+
+    buildAlbums();
   </script>
 </body>
 </html>
