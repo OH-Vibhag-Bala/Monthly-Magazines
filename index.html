@@ -1,971 +1,967 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="color-scheme" content="light" />
-  <title>HSS - Ohio Vibhag Bala Gana Monthly Magazine - Jan - 2026</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <title>HSS - Ohio Vibhag Bala Gana Monthly Magazine - Jan - 2026</title>
 
-  <!--
-    Executive summary (what was fixed and why)
-    - Converted the desktop layout into a true 2-page spread flipbook: each sheet is a half-width page anchored at the spine (50%),
-      so when you flip, the sheet back becomes the LEFT page and the next sheet front becomes the RIGHT page. This prevents backs
-      (especially Sheet 1 back) from being hidden behind the next sheet.
-    - Rebuilt z-index stacking in JS to match physical page stacks (unflipped stack on the right, flipped stack on the left).
-    - Removed the broken radio/label album controls and rebuilt album pagination dynamically with accessible <button> dots
-      (ARIA roles, roving tabindex, keyboard arrows/Home/End support).
-    - Fixed invalid/broken HTML from the original (missing </video>, malformed <img>, stray </video> text inside an image slide),
-      which was corrupting the DOM and “messing up” later pages.
-    - Ensured media never crops: album images/videos use object-fit: contain, and album frames are responsive (aspect-ratio + clamps).
-    - Fixed scrolling: body no longer relies on overflow:hidden; content can scroll normally, and mobile uses a safe bottom padding
-      so the fixed navigation bar does not cover content.
-    - Navigation:
-      * Desktop (>= 769px): flip by SHEET (spread view). One click advances to the next spread.
-      * Mobile (<= 768px): single-side navigation across 16 sides (front/back of each of 8 sheets).
-    - Videos stop automatically when switching slides and when leaving a page/side during navigation.
-    Source: provided original HTML fileciteturn0file0
-  -->
+    <!--
+      Executive summary (what was fixed and why)
+      - Converted the desktop layout into a true 2-page spread flipbook: each sheet is a half-width page anchored at the spine (50%),
+        so when you flip, the sheet back becomes the LEFT page and the next sheet front becomes the RIGHT page. This prevents backs
+        (especially Sheet 1 back) from being hidden behind the next sheet.
+      - Rebuilt z-index stacking in JS to match physical page stacks (unflipped stack on the right, flipped stack on the left).
+      - Removed the broken radio/label album controls and rebuilt album pagination dynamically with accessible <button> dots
+        (ARIA roles, roving tabindex, keyboard arrows/Home/End support).
+      - Fixed invalid/broken HTML from the original (missing </video>, malformed <img>, stray </video> text inside an image slide),
+        which was corrupting the DOM and “messing up” later pages.
+      - Ensured media never crops: album images/videos use object-fit: contain, and album frames are responsive (aspect-ratio + clamps).
+      - Fixed scrolling: body no longer relies on overflow:hidden; content can scroll normally, and mobile uses a safe bottom padding
+        so the fixed navigation bar does not cover content.
+      - Navigation:
+        * Desktop (>= 769px): flip by SHEET (spread view). One click advances to the next spread.
+        * Mobile (<= 768px): single-side navigation across 16 sides (front/back of each of 8 sheets).
+      - Videos stop automatically when switching slides and when leaving a page/side during navigation.
+      Source: provided original HTML fileciteturn0file0
+    -->
 
-  <style>
-    :root{
-      --primary-color: #FF9933; /* saffron */
-      --accent-color: #FFCC00;  /* yellow */
-      --text-color: #8b0000;    /* dark red */
-      --bg-color: #FFFDD0;      /* cream */
+    <style>
+        :root{
+          --primary-color: #FF9933; /* saffron */
+          --accent-color: #FFCC00;  /* yellow */
+          --text-color: #8b0000;    /* dark red */
+          --bg-color: #FFFDD0;      /* cream */
 
-      --page-radius: 10px;
-      --page-border: rgba(0,0,0,0.10);
-      --shadow: 0 10px 30px rgba(0,0,0,0.20);
+          --page-radius: 10px;
+          --page-border: rgba(0,0,0,0.10);
+          --shadow: 0 10px 30px rgba(0,0,0,0.20);
 
-      /* Desktop sizing (spread = 2 pages) */
-      --pageW: clamp(320px, 36vw, 460px);
-      --spreadW: calc(var(--pageW) * 2);
-      --pageH: clamp(520px, 72vh, 660px);
+          /* Desktop sizing (spread = 2 pages) */
+          --pageW: clamp(320px, 36vw, 460px);
+          --spreadW: calc(var(--pageW) * 2);
+          --pageH: clamp(520px, 72vh, 660px);
 
-      --ui-gap: 12px;
-      --ui-radius: 12px;
-    }
+          --ui-gap: 12px;
+          --ui-radius: 12px;
+        }
 
-    *{ box-sizing: border-box; }
+        *{ box-sizing: border-box; }
 
-    html, body{
-      width: 100%;
-      height: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
-    }
+        html, body{
+          width: 100%;
+          height: 100%;
+          max-width: 100%;
+          overflow-x: hidden;
+        }
 
-    body{
-      margin: 0;
-      padding: 18px 12px 96px;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background: #f0e6d2;
-      color: #111;
-      overflow-x: hidden;
-      overflow-y: auto;
-    }
+        body{
+          margin: 0;
+          padding: 18px 12px 96px;
+          font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+          background: #f0e6d2;
+          color: #111;
+          overflow-x: hidden;
+          overflow-y: auto;
+        }
 
-    .magazine-container{
-      width: min(100%, calc(var(--spreadW) + 40px));
-      margin: 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 14px;
-    }
+        .magazine-container{
+          width: min(100%, calc(var(--spreadW) + 40px));
+          margin: 0 auto;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 14px;
+        }
 
-    .book{
-      position: relative;
-      width: var(--spreadW);
-      max-width: 100%;
-      height: var(--pageH);
-      perspective: 1600px;
-      transform-style: preserve-3d;
-      -webkit-transform-style: preserve-3d;
-      overflow: visible; /* allow page swing */
-    }
+        .book{
+          position: relative;
+          width: var(--spreadW);
+          max-width: 100%;
+          height: var(--pageH);
+          perspective: 1600px;
+          transform-style: preserve-3d;
+          -webkit-transform-style: preserve-3d;
+          overflow: visible; /* allow page swing */
+        }
 
-    .book__base{
-      position: absolute;
-      inset: 0;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      pointer-events: none;
-      border-radius: var(--page-radius);
-      overflow: hidden;
-      box-shadow: var(--shadow);
-      border: 1px solid var(--page-border);
-      background: linear-gradient(
-        to right,
-        rgba(0,0,0,0.08),
-        rgba(0,0,0,0.02) 18%,
-        rgba(0,0,0,0.02) 82%,
-        rgba(0,0,0,0.08)
-      );
-    }
+        .book__base{
+          position: absolute;
+          inset: 0;
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          pointer-events: none;
+          border-radius: var(--page-radius);
+          overflow: hidden;
+          box-shadow: var(--shadow);
+          border: 1px solid var(--page-border);
+          background: linear-gradient(
+            to right,
+            rgba(0,0,0,0.08),
+            rgba(0,0,0,0.02) 18%,
+            rgba(0,0,0,0.02) 82%,
+            rgba(0,0,0,0.08)
+          );
+        }
 
-    .book__base .base-left,
-    .book__base .base-right{
-      background: var(--bg-color);
-    }
+        .book__base .base-left,
+        .book__base .base-right{
+          background: var(--bg-color);
+        }
 
-    .book__spine{
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      left: 50%;
-      width: 2px;
-      transform: translateX(-1px);
-      background: linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.22), rgba(0,0,0,0.10));
-      pointer-events: none;
-      z-index: 5;
-      opacity: 0.8;
-    }
+        .book__spine{
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 50%;
+          width: 2px;
+          transform: translateX(-1px);
+          background: linear-gradient(to bottom, rgba(0,0,0,0.10), rgba(0,0,0,0.22), rgba(0,0,0,0.10));
+          pointer-events: none;
+          z-index: 5;
+          opacity: 0.8;
+        }
 
-    .sheet{
-      position: absolute;
-      top: 0;
-      left: 50%;
-      width: 50%;
-      height: 100%;
-      transform-origin: left center;
-      transform-style: preserve-3d;
-      -webkit-transform-style: preserve-3d;
-      transition: transform 0.95s cubic-bezier(0.645, 0.045, 0.355, 1);
-      border-radius: 0 var(--page-radius) var(--page-radius) 0;
-      overflow: visible;
-      will-change: transform;
-    }
+        .sheet{
+          position: absolute;
+          top: 0;
+          left: 50%;
+          width: 50%;
+          height: 100%;
+          transform-origin: left center;
+          transform-style: preserve-3d;
+          -webkit-transform-style: preserve-3d;
+          transition: transform 0.95s cubic-bezier(0.645, 0.045, 0.355, 1);
+          border-radius: 0 var(--page-radius) var(--page-radius) 0;
+          overflow: visible;
+          will-change: transform;
+        }
 
-    .sheet.is-flipped{
-      transform: rotateY(-180deg);
-      border-radius: var(--page-radius) 0 0 var(--page-radius);
-    }
+        .sheet.is-flipped{
+          transform: rotateY(-180deg);
+          border-radius: var(--page-radius) 0 0 var(--page-radius);
+        }
 
-    .page-face{
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      -webkit-backface-visibility: hidden;
-      border: 1px solid var(--page-border);
-      background: var(--bg-color);
-      display: flex;
-      flex-direction: column;
-      padding: 16px;
-      overflow: hidden;
-    }
+        .page-face{
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          border: 1px solid var(--page-border);
+          background: var(--bg-color);
+          display: flex;
+          flex-direction: column;
+          padding: 16px;
+          overflow: hidden;
+        }
 
-    .page-face.front{
-      border-radius: 0 var(--page-radius) var(--page-radius) 0;
-      z-index: 2;
-    }
+        .page-face.front{
+          border-radius: 0 var(--page-radius) var(--page-radius) 0;
+          z-index: 2;
+        }
 
-    .page-face.back{
-      transform: rotateY(180deg);
-      border-radius: var(--page-radius) 0 0 var(--page-radius);
-      background: linear-gradient(to right, #e3dac9, var(--bg-color));
-      z-index: 1;
-    }
+        .page-face.back{
+          transform: rotateY(180deg);
+          border-radius: var(--page-radius) 0 0 var(--page-radius);
+          background: linear-gradient(to right, #e3dac9, var(--bg-color));
+          z-index: 1;
+        }
 
-    .page-content{
-      position: relative;
-      width: 100%;
-      height: 100%;
-      border: 2px double var(--primary-color);
-      border-radius: 8px;
-      padding: 14px 14px 34px;
-      overflow: auto;
-      background: rgba(255,255,255,0.40);
-      scrollbar-gutter: stable both-edges;
-    }
+        .page-content{
+          position: relative;
+          width: 100%;
+          height: 100%;
+          border: 2px double var(--primary-color);
+          border-radius: 8px;
+          padding: 14px 14px 34px;
+          overflow: auto;
+          background: rgba(255,255,255,0.40);
+          scrollbar-gutter: stable both-edges;
+        }
 
-    .page-number{
-      position: absolute;
-      right: 12px;
-      bottom: 10px;
-      font-size: 12px;
-      opacity: 0.75;
-    }
+        .page-number{
+          position: absolute;
+          right: 12px;
+          bottom: 10px;
+          font-size: 12px;
+          opacity: 0.75;
+        }
 
-    h1, h2{
-      margin: 0;
-      color: var(--text-color);
-    }
+        h1, h2{
+          margin: 0;
+          color: var(--text-color);
+        }
 
-    h2{
-      font-size: 1.35rem;
-      padding-bottom: 8px;
-      border-bottom: 2px solid var(--accent-color);
-      margin-bottom: 14px;
-    }
+        h2{
+          font-size: 1.35rem;
+          padding-bottom: 8px;
+          border-bottom: 2px solid var(--accent-color);
+          margin-bottom: 14px;
+        }
 
-    .cover-design{
-      width: 100%;
-      height: 100%;
-      border: 5px solid var(--primary-color);
-      border-radius: 8px;
-      padding: 12px;
-      background: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 8px;
-      overflow: hidden;
-    }
+        .cover-design{
+          width: 100%;
+          height: 100%;
+          border: 5px solid var(--primary-color);
+          border-radius: 8px;
+          padding: 12px;
+          background: #fff;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 8px;
+          overflow: hidden;
+        }
 
-    .hss-branding{
-      font-weight: 800;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--primary-color);
-      font-size: 1.05rem;
-      margin-top: 4px;
-    }
+        .hss-branding{
+          font-weight: 800;
+          letter-spacing: 1px;
+          text-transform: uppercase;
+          color: var(--primary-color);
+          font-size: 1.05rem;
+          margin-top: 4px;
+        }
 
-    .cover-img{
-      width: 100%;
-      max-width: 100%;
-      height: auto;
-      max-height: 320px;
-      object-fit: contain;
-      border-radius: 8px;
-      border: 2px solid var(--accent-color);
-      background: #fff;
-    }
+        .cover-img{
+          width: 100%;
+          max-width: 100%;
+          height: auto;
+          max-height: 320px;
+          object-fit: contain;
+          border-radius: 8px;
+          border: 2px solid var(--accent-color);
+          background: #fff;
+        }
 
-    .magazine-title{
-      text-align: center;
-      font-size: 1.4rem;
-      line-height: 1.2;
-      text-shadow: 0 1px 0 rgba(0,0,0,0.05);
-    }
+        .magazine-title{
+          text-align: center;
+          font-size: 1.4rem;
+          line-height: 1.2;
+          text-shadow: 0 1px 0 rgba(0,0,0,0.05);
+        }
 
-    .edition-text{
-      margin-top: auto;
-      font-weight: 800;
-      color: var(--primary-color);
-    }
+        .edition-text{
+          margin-top: auto;
+          font-weight: 800;
+          color: var(--primary-color);
+        }
 
-    .activities p{
-      margin: 0 0 10px;
-    }
-    .activities ul{
-      margin: 8px 0 0;
-      padding-left: 18px;
-      line-height: 1.45;
-    }
-    .activities li{
-      margin: 0 0 8px;
-    }
+        .activities p{
+          margin: 0 0 10px;
+        }
+        .activities ul{
+          margin: 8px 0 0;
+          padding-left: 18px;
+          line-height: 1.45;
+        }
+        .activities li{
+          margin: 0 0 8px;
+        }
 
-    .ornament{
-      margin-top: 14px;
-      height: 10px;
-      border-radius: 999px;
-      background: linear-gradient(to right, transparent, rgba(0,0,0,0.10), transparent);
-    }
+        .ornament{
+          margin-top: 14px;
+          height: 10px;
+          border-radius: 999px;
+          background: linear-gradient(to right, transparent, rgba(0,0,0,0.10), transparent);
+        }
 
-    .album{
-      margin-top: 10px;
-      width: 100%;
-    }
+        .album{
+          margin-top: 10px;
+          width: 100%;
+        }
 
-    .album-slides{
-      position: relative;
-      width: 100%;
-      aspect-ratio: 16 / 9;
-      min-height: 200px;
-      max-height: 360px;
-      height: clamp(210px, 32vh, 330px);
-      border-radius: 12px;
-      overflow: hidden;
-      background: #f7f1e4;
-      border: 1px solid rgba(0,0,0,0.10);
-    }
+        .album-slides{
+          position: relative;
+          width: 100%;
+          aspect-ratio: 16 / 9;
+          min-height: 200px;
+          max-height: 360px;
+          height: clamp(210px, 32vh, 330px);
+          border-radius: 12px;
+          overflow: hidden;
+          background: #f7f1e4;
+          border: 1px solid rgba(0,0,0,0.10);
+        }
 
-    .album-slide{
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px;
-      background: #f7f1e4;
-    }
+        .album-slide{
+          position: absolute;
+          inset: 0;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          padding: 8px;
+          background: #f7f1e4;
+        }
 
-    .album-slide[hidden]{
-      display: none !important;
-    }
+        .album-slide[hidden]{
+          display: none !important;
+        }
 
-    .album-slide img,
-    .album-slide video{
-      width: 100%;
-      height: 100%;
-      object-fit: contain; /* critical: show full content */
-      object-position: center;
-      display: block;
-      border-radius: 10px;
-      background: #fff;
-    }
+        .album-slide img,
+        .album-slide video{
+          width: 100%;
+          height: 100%;
+          object-fit: contain; /* critical: show full content */
+          object-position: center;
+          display: block;
+          border-radius: 10px;
+          background: #fff;
+        }
 
-    .album-pagination{
-      margin-top: 10px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
+        .album-pagination{
+          margin-top: 10px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          gap: 10px;
+          flex-wrap: wrap;
+        }
 
-    .album-dot{
-      width: 14px;
-      height: 14px;
-      border-radius: 999px;
-      border: 2px solid #333;
-      background: transparent;
-      cursor: pointer;
-      padding: 0;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
+        .album-dot{
+          width: 14px;
+          height: 14px;
+          border-radius: 999px;
+          border: 2px solid #333;
+          background: transparent;
+          cursor: pointer;
+          padding: 0;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+        }
 
-    .album-dot[aria-selected="true"]{
-      background: #333;
-    }
+        .album-dot[aria-selected="true"]{
+          background: #333;
+        }
 
-    .album-dot:focus-visible{
-      outline: 3px solid rgba(0,0,0,0.35);
-      outline-offset: 2px;
-    }
+        .album-dot:focus-visible{
+          outline: 3px solid rgba(0,0,0,0.35);
+          outline-offset: 2px;
+        }
 
-    .album-caption{
-      text-align: center;
-      font-size: 0.95rem;
-      margin-top: 8px;
-      opacity: 0.9;
-    }
+        .album-caption{
+          text-align: center;
+          font-size: 0.95rem;
+          margin-top: 8px;
+          opacity: 0.9;
+        }
 
-    .back-cover{
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      background: #ffebcd;
-      text-align: center;
-    }
+        .back-cover{
+          display: flex;
+          flex-direction: column;
+          justify-content: center;
+          background: #ffebcd;
+          text-align: center;
+        }
 
-    a{
-      color: var(--text-color);
-      font-weight: 800;
-      text-decoration: none;
-    }
-    a:hover{ text-decoration: underline; }
+        a{
+          color: var(--text-color);
+          font-weight: 800;
+          text-decoration: none;
+        }
+        a:hover{ text-decoration: underline; }
 
-    .controls{
-      width: min(100%, var(--spreadW));
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: var(--ui-gap);
-    }
+        .controls{
+          width: min(100%, var(--spreadW));
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: var(--ui-gap);
+        }
 
-    .controls button{
-      appearance: none;
-      border: none;
-      padding: 12px 16px;
-      border-radius: var(--ui-radius);
-      font-weight: 800;
-      background: var(--primary-color);
-      color: #fff;
-      cursor: pointer;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.16);
-      min-width: 140px;
-    }
+        .controls button{
+          appearance: none;
+          border: none;
+          padding: 12px 16px;
+          border-radius: var(--ui-radius);
+          font-weight: 800;
+          background: var(--primary-color);
+          color: #fff;
+          cursor: pointer;
+          box-shadow: 0 3px 10px rgba(0,0,0,0.16);
+          min-width: 140px;
+        }
 
-    .controls button:hover{ background: #e68a00; }
+        .controls button:hover{ background: #e68a00; }
 
-    .controls button:disabled{
-      background: #c7c7c7;
-      cursor: not-allowed;
-      box-shadow: none;
-      opacity: 0.9;
-    }
+        .controls button:disabled{
+          background: #c7c7c7;
+          cursor: not-allowed;
+          box-shadow: none;
+          opacity: 0.9;
+        }
 
-    .controls button:focus-visible{
-      outline: 3px solid rgba(0,0,0,0.35);
-      outline-offset: 2px;
-    }
+        .controls button:focus-visible{
+          outline: 3px solid rgba(0,0,0,0.35);
+          outline-offset: 2px;
+        }
 
-    @media (max-width: 768px){
-      :root{
-        --pageW: 100%;
-        --spreadW: 100%;
-        --pageH: auto;
-      }
+        @media (max-width: 768px){
+          :root{
+            --pageW: 100%;
+            --spreadW: 100%;
+            --pageH: auto;
+          }
 
-      body{
-        padding: 12px 10px 92px;
-      }
+          body{
+            padding: 12px 10px 92px;
+          }
 
-      .magazine-container{
-        width: 100%;
-      }
+          .magazine-container{
+            width: 100%;
+          }
 
-      .book{
-        width: 100%;
-        height: auto;
-        perspective: none;
-      }
+          .book{
+            width: 100%;
+            height: auto;
+            perspective: none;
+          }
 
-      .book__base,
-      .book__spine{
-        display: none;
-      }
+          .book__base,
+          .book__spine{
+            display: none;
+          }
 
-      .sheet{
-        position: relative;
-        left: 0;
-        width: 100%;
-        height: auto;
-        transform: none !important;
-        border-radius: var(--page-radius);
-        display: none;
-      }
+          .sheet{
+            position: relative;
+            left: 0;
+            width: 100%;
+            height: auto;
+            transform: none !important;
+            border-radius: var(--page-radius);
+            display: none;
+          }
 
-      .sheet.is-mobile-visible{
-        display: block;
-      }
+          .sheet.is-mobile-visible{
+            display: block;
+          }
 
-      .page-face{
-        position: relative;
-        inset: auto;
-        height: auto;
-        min-height: calc(100vh - 170px);
-        transform: none !important;
-        backface-visibility: visible;
-        -webkit-backface-visibility: visible;
-        border-radius: var(--page-radius);
-        display: none;
-      }
+          .page-face{
+            position: relative;
+            inset: auto;
+            height: auto;
+            min-height: calc(100vh - 170px);
+            transform: none !important;
+            backface-visibility: visible;
+            -webkit-backface-visibility: visible;
+            border-radius: var(--page-radius);
+            display: none;
+          }
 
-      .page-face.is-side-active{
-        display: flex;
-      }
+          .page-face.is-side-active{
+            display: flex;
+          }
 
-      .page-content{
-        height: auto;
-        overflow: visible;
-      }
+          .page-content{
+            height: auto;
+            overflow: visible;
+          }
 
-      .controls{
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        margin: 0;
-        padding: 10px 12px;
-        background: rgba(255,255,255,0.94);
-        backdrop-filter: blur(6px);
-        box-shadow: 0 -6px 18px rgba(0,0,0,0.10);
-        z-index: 9999;
-      }
+          .controls{
+            position: fixed;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            margin: 0;
+            padding: 10px 12px;
+            background: rgba(255,255,255,0.94);
+            backdrop-filter: blur(6px);
+            box-shadow: 0 -6px 18px rgba(0,0,0,0.10);
+            z-index: 9999;
+          }
 
-      .controls button{
-        flex: 1 1 0;
-        min-width: 0;
-        width: 50%;
-        padding: 12px 10px;
-        font-size: 16px;
-      }
+          .controls button{
+            flex: 1 1 0;
+            min-width: 0;
+            width: 50%;
+            padding: 12px 10px;
+            font-size: 16px;
+          }
 
-      .album-slides{
-        height: clamp(200px, 30vh, 280px);
-        max-height: 320px;
-      }
+          .album-slides{
+            height: clamp(200px, 30vh, 280px);
+            max-height: 320px;
+          }
 
-      .cover-img{
-        max-height: 240px;
-      }
+          .cover-img{
+            max-height: 240px;
+          }
 
-      .magazine-title{
-        font-size: 1.2rem;
-      }
-    }
+          .magazine-title{
+            font-size: 1.2rem;
+          }
+        }
 
-    @media (prefers-reduced-motion: reduce){
-      .sheet{ transition: none; }
-    }
-  </style>
+        @media (prefers-reduced-motion: reduce){
+          .sheet{ transition: none; }
+        }
+    </style>
 </head>
 
 <body>
-  <div class="magazine-container">
+<div class="magazine-container">
     <div class="book" id="book" aria-label="HSS Ohio Vibhag Bala Gana magazine flipbook">
-      <div class="book__base" aria-hidden="true">
-        <div class="base-left"></div>
-        <div class="base-right"></div>
-      </div>
-      <div class="book__spine" aria-hidden="true"></div>
-
-      <!-- SHEET 1 -->
-      <section class="sheet" id="sheet1" aria-label="Sheet 1">
-        <div class="page-face front" aria-label="Page 1 Cover">
-          <div class="cover-design">
-            <div class="hss-branding">HSS Balagokulam</div>
-            <img src="cover_art1.png" alt="Magazine Cover" class="cover-img" />
-            <h1 class="magazine-title">HSS - Ohio Vibhag</h1>
-            <h1 class="magazine-title">Bala Gana Monthly Magazine - Jan to Mar - 2026</h1>
-            <p class="edition-text">An Initiative of HSSUS.ORG</p>
-          </div>
+        <div class="book__base" aria-hidden="true">
+            <div class="base-left"></div>
+            <div class="base-right"></div>
         </div>
+        <div class="book__spine" aria-hidden="true"></div>
 
-        <div class="page-face back" aria-label="Page 2 Gajanan Shakha">
-          <div class="page-content activities">
-            <h2>Gajanan Shakha</h2>
-
-            <div class="album" data-album-title="Gajanan Shakha Articles">
-              <div class="album-slides" aria-label="Gajanan Shakha article album">
-                <div class="album-slide">
-                  <img loading="lazy" decoding="async" src="Gajanan-Article1.JPG" alt="Gajanan Shakha article image 1" />
+        <!-- SHEET 1 -->
+        <section class="sheet" id="sheet1" aria-label="Sheet 1">
+            <div class="page-face front" aria-label="Page 1 Cover">
+                <div class="cover-design">
+                    <div class="hss-branding">HSS Balagokulam</div>
+                    <img src="cover_art1.png" alt="Magazine Cover" class="cover-img" />
+                    <h1 class="magazine-title">HSS - Ohio Vibhag</h1>
+                    <h1 class="magazine-title">Bala Gana Monthly Magazine - Jan to Mar - 2026</h1>
+                    <p class="edition-text">An Initiative of HSSUS.ORG</p>
                 </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="Gajanan-Article2.JPG" alt="Gajanan Shakha article image 2" />
-                </div>
-              </div>
-
-              <div class="album-pagination" aria-label="Gajanan Shakha article album pagination"></div>
-              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
-            <div class="page-number">2</div>
-          </div>
-        </div>
-      </section>
+            <div class="page-face back" aria-label="Page 2 Gajanan Shakha">
+                <div class="page-content activities">
+                    <h2>Gajanan Shakha</h2>
 
-      <!-- SHEET 2 -->
-      <section class="sheet" id="sheet2" aria-label="Sheet 2">
-        <div class="page-face front" aria-label="Page 3 Gajanan Shakha">
-          <div class="page-content">
-            <h2>Gajanan Shakha</h2>
+                    <div class="album" data-album-title="Gajanan Shakha Articles">
+                        <div class="album-slides" aria-label="Gajanan Shakha article album">
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="Gajanan-Article1.JPG" alt="Gajanan Shakha article image 1" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Gajanan-Article2.JPG" alt="Gajanan Shakha article image 2" />
+                            </div>
+                        </div>
 
-            <div class="album" data-album-title="Gajanan Shakha Album">
-              <div class="album-slides" aria-label="Gajanan Shakha photo album">
-                <div class="album-slide">
-                  <img loading="lazy" decoding="async" src="gajanan001.jpg" alt="Gajanan Shakha media 1" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="gajanan002.jpg" alt="Gajanan Shakha media 2" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="gajanan003.jpg" alt="Gajanan Shakha media 3" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="gajanan004.jpg" alt="Gajanan Shakha media 4" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="gajanan005.jpg" alt="Gajanan Shakha media 5" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="gajanan006.jpg" alt="Gajanan Shakha media 6" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="gajanan007.jpg" alt="Gajanan Shakha media 7" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="gajanan008.jpg" alt="Gajanan Shakha media 8" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="gajanan009.jpg" alt="Gajanan Shakha media 9" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="gajanan010.jpg" alt="Gajanan Shakha media 10" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="gajanan011.jpg" alt="Gajanan Shakha media 11" />
-                </div>
-              </div>
+                        <div class="album-pagination" aria-label="Gajanan Shakha article album pagination"></div>
+                        <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+                    </div>
 
-              <div class="album-pagination" aria-label="Gajanan Shakha album pagination"></div>
-              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+                    <div class="page-number">2</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- SHEET 2 -->
+        <section class="sheet" id="sheet2" aria-label="Sheet 2">
+            <div class="page-face front" aria-label="Page 3 Gajanan Shakha">
+                <div class="page-content">
+                    <h2>Gajanan Shakha</h2>
+
+                    <div class="album" data-album-title="Gajanan Shakha Album">
+                        <div class="album-slides" aria-label="Gajanan Shakha photo album">
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="gajanan001.jpg" alt="Gajanan Shakha media 1" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="gajanan002.jpg" alt="Gajanan Shakha media 2" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="gajanan003.jpg" alt="Gajanan Shakha media 3" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="gajanan004.jpg" alt="Gajanan Shakha media 4" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="gajanan005.jpg" alt="Gajanan Shakha media 5" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="gajanan006.jpg" alt="Gajanan Shakha media 6" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="gajanan007.jpg" alt="Gajanan Shakha media 7" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="gajanan008.jpg" alt="Gajanan Shakha media 8" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="gajanan009.jpg" alt="Gajanan Shakha media 9" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="gajanan010.jpg" alt="Gajanan Shakha media 10" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="gajanan011.jpg" alt="Gajanan Shakha media 11" />
+                            </div>
+                        </div>
+
+                        <div class="album-pagination" aria-label="Gajanan Shakha album pagination"></div>
+                        <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+                    </div>
+
+                    <div class="page-number">3</div>
+                </div>
             </div>
 
-            <div class="page-number">3</div>
-          </div>
-        </div>
-
-        <div class="page-face back" aria-label="Page 4 Kartikeya Shakha">
-          <div class="page-content activities">
-            <h2>Kartikeya Shakha</h2>
-            <p>Shakha activities and highlights:</p>
-            <ul>
-              <li>Started the New Year with daily suryanamaskars.</li>
-              <li>Celebrated Makar-Sankranti Utsav.</li>
-              <li>Craft activity showing kite flying tradition.</li>
-              <li>Played new games, practised Yoga and Pranayam.</li>
-              <li>Balas lead Amrutvachan and Subhashitam.</li>
-              <li>During Baudhik, balas learned from our Balagokulam book and showed a great interest in stories of Abhimanyu and Hanumanji.</li>
-            </ul>
-            <div class="ornament"></div>
-            <div class="page-number">4</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SHEET 3 -->
-      <section class="sheet" id="sheet3" aria-label="Sheet 3">
-        <div class="page-face front" aria-label="Page 5 Kartikeya Shakha">
-          <div class="page-content">
-            <h2>Kartikeya Shakha</h2>
-
-            <div class="album" data-album-title="Kartikeya Shakha Album">
-              <div class="album-slides" aria-label="Kartikeya Shakha media album">
-                <div class="album-slide">
-                  <video controls preload="metadata">
-                    <source src="karthikeya001.mp4" type="video/mp4" />
-                    Sorry, your browser does not support MP4 video.
-                  </video>
+            <div class="page-face back" aria-label="Page 4 Kartikeya Shakha">
+                <div class="page-content activities">
+                    <h2>Kartikeya Shakha</h2>
+                    <p>Shakha activities and highlights:</p>
+                    <ul>
+                        <li>Started the New Year with daily suryanamaskars.</li>
+                        <li>Celebrated Makar-Sankranti Utsav.</li>
+                        <li>Craft activity showing kite flying tradition.</li>
+                        <li>Played new games, practised Yoga and Pranayam.</li>
+                        <li>Balas lead Amrutvachan and Subhashitam.</li>
+                        <li>During Baudhik, balas learned from our Balagokulam book and showed a great interest in stories of Abhimanyu and Hanumanji.</li>
+                    </ul>
+                    <div class="ornament"></div>
+                    <div class="page-number">4</div>
                 </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="karthikeya002.jpg" alt="Kartikeya Shakha media 2" />
+            </div>
+        </section>
+
+        <!-- SHEET 3 -->
+        <section class="sheet" id="sheet3" aria-label="Sheet 3">
+            <div class="page-face front" aria-label="Page 5 Kartikeya Shakha">
+                <div class="page-content">
+                    <h2>Kartikeya Shakha</h2>
+
+                    <div class="album" data-album-title="Kartikeya Shakha Album">
+                        <div class="album-slides" aria-label="Kartikeya Shakha media album">
+                            <div class="album-slide">
+                                <video controls preload="metadata">
+                                    <source src="karthikeya001.mp4" type="video/mp4" />
+                                    Sorry, your browser does not support MP4 video.
+                                </video>
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="karthikeya002.jpg" alt="Kartikeya Shakha media 2" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="karthikeya003.jpg" alt="Kartikeya Shakha media 3" />
+                            </div>
+
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="karthikeya004.jpg" alt="Kartikeya Shakha media 4" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="karthikeya005.jpg" alt="Kartikeya Shakha media 5" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="karthikeya006.jpg" alt="Kartikeya Shakha media 6" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="karthikeya007.jpg" alt="Kartikeya Shakha media 7" />
+                            </div>
+
+
+                        </div>
+
+                        <div class="album-pagination" aria-label="Kartikeya Shakha album pagination"></div>
+                        <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+                    </div>
+
+                    <div class="page-number">5</div>
                 </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="karthikeya003.jpg" alt="Kartikeya Shakha media 3" />
-                </div>
-
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="karthikeya004.jpg" alt="Kartikeya Shakha media 4" />
-                  </div>
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="karthikeya005.jpg" alt="Kartikeya Shakha media 5" />
-                  </div>
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="karthikeya006.jpg" alt="Kartikeya Shakha media 6" />
-                  </div>
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="karthikeya007.jpg" alt="Kartikeya Shakha media 7" />
-                  </div>
-
-   
-              </div>
-
-              <div class="album-pagination" aria-label="Kartikeya Shakha album pagination"></div>
-              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
-            <div class="page-number">5</div>
-          </div>
-        </div>
+            <div class="page-face back" aria-label="Page 6 Pratap Shakha">
+                <div class="page-content activities">
+                    <h2>Pratap Shakha</h2>
 
-        <div class="page-face back" aria-label="Page 6 Pratap Shakha">
-          <div class="page-content activities">
-            <h2>Pratap Shakha</h2>
-
-              <div class="album" data-album-title="Pratap Shakha Articles">
-              <div class="album-slides" aria-label="Pratap Shakha article album">
-                  <div class="album-slide">
-                      <img loading="lazy" decoding="async" src="Pratap-Article1.JPG" alt="Prataap Shakha article image 1" />
-                  </div>
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="Pratap-Article2.JPG" alt="Prataap Shakha article image 2" />
-                  </div>
+                    <div class="album" data-album-title="Pratap Shakha Articles">
+                        <div class="album-slides" aria-label="Pratap Shakha article album">
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="Pratap-Article1.JPG" alt="Prataap Shakha article image 1" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Pratap-Article2.JPG" alt="Prataap Shakha article image 2" />
+                            </div>
 
 
-                  <div class="album-slide">
-                      <img loading="lazy" decoding="async" src="Pratap-Article3.JPG" alt="Prataap Shakha article image 1" />
-                  </div>
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="Pratap-Article4.JPG" alt="Prataap Shakha article image 2" />
-                  </div>
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="Pratap-Article3.JPG" alt="Prataap Shakha article image 1" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Pratap-Article4.JPG" alt="Prataap Shakha article image 2" />
+                            </div>
 
-              </div>
+                        </div>
 
-              <div class="album-pagination" aria-label="Gajanan Shakha article album pagination"></div>
-              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
-          </div>
+                        <div class="album-pagination" aria-label="Gajanan Shakha article album pagination"></div>
+                        <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+                    </div>
 
-            <!--p>Shakha activities and highlights:</p>
-            <ul>
-              <li>Celebrated Vasant Panchami with enthusiasm.</li>
-              <li>Children played various musical instruments.</li>
-              <li>Some children recited shlokas.</li>
-              <li>A few performed Carnatic kirtanas.</li>
-              <li>Conducted a craft activity creating Goddess Saraswati pictures using cards.</li>
-            </ul>
-            <div class="ornament"></div-->
-            <div class="page-number">6</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SHEET 4 -->
-      <section class="sheet" id="sheet4" aria-label="Sheet 4">
-        <div class="page-face front" aria-label="Page 7 Pratap Shakha">
-          <div class="page-content">
-            <h2>Pratap Shakha</h2>
-
-            <div class="album" data-album-title="Pratap Shakha Album">
-              <div class="album-slides" aria-label="Pratap Shakha photo album">
-
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="Prataap-shakha-001.jpg" alt="Pratap Shakha media 2" />
+                    <!--p>Shakha activities and highlights:</p>
+                    <ul>
+                      <li>Celebrated Vasant Panchami with enthusiasm.</li>
+                      <li>Children played various musical instruments.</li>
+                      <li>Some children recited shlokas.</li>
+                      <li>A few performed Carnatic kirtanas.</li>
+                      <li>Conducted a craft activity creating Goddess Saraswati pictures using cards.</li>
+                    </ul>
+                    <div class="ornament"></div-->
+                    <div class="page-number">6</div>
                 </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="Prataap-shakha-002.jpg" alt="Pratap Shakha media 3" />
+            </div>
+        </section>
+
+        <!-- SHEET 4 -->
+        <section class="sheet" id="sheet4" aria-label="Sheet 4">
+            <div class="page-face front" aria-label="Page 7 Pratap Shakha">
+                <div class="page-content">
+                    <h2>Pratap Shakha</h2>
+
+                    <div class="album" data-album-title="Pratap Shakha Album">
+                        <div class="album-slides" aria-label="Pratap Shakha photo album">
+
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Prataap-shakha-001.jpg" alt="Pratap Shakha media 2" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Prataap-shakha-002.jpg" alt="Pratap Shakha media 3" />
+                            </div>
+
+
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Prataap-shakha-005.JPG" alt="Pratap Shakha media 3" />
+                            </div>
+
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Prataap-shakha-007.JPG" alt="Pratap Shakha media 2" />
+                            </div>
+
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="Prataap-shakha-009.JPG" alt="Pratap Shakha media 1" />
+                            </div>
+
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Prataap-shakha-011.JPG" alt="Pratap Shakha media 3" />
+                            </div>
+
+
+                        </div>
+
+                        <div class="album-pagination" aria-label="Pratap Shakha album pagination"></div>
+                        <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+                    </div>
+
+                    <div class="page-number">7</div>
                 </div>
-
-
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="Prataap-shakha-005.JPG" alt="Pratap Shakha media 3" />
-                  </div>
-
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="Prataap-shakha-007.JPG" alt="Pratap Shakha media 2" />
-                  </div>
-
-                  <div class="album-slide">
-                      <img loading="lazy" decoding="async" src="Prataap-shakha-009.JPG" alt="Pratap Shakha media 1" />
-                  </div>
-
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="Prataap-shakha-011.JPG" alt="Pratap Shakha media 3" />
-                  </div>
-
-      
-              </div>
-
-              <div class="album-pagination" aria-label="Pratap Shakha album pagination"></div>
-              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
-            <div class="page-number">7</div>
-          </div>
-        </div>
-
-        <div class="page-face back" aria-label="Page 8 Pushpak Shakha">
-          <div class="page-content activities">
-            <h2>Pushpak Shakha</h2>
-            <p>Shakha activities and highlights:</p>
-            <ul>
-              <li>Conducted Sankranthi Shakha kids craft.</li>
-              <li>Concluded SNY in our Shakha (Pushpak Shakha Dayton) and issued participation certificates to all Balas.</li>
-            </ul>
-            <div class="ornament"></div>
-            <div class="page-number">8</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SHEET 5 -->
-      <section class="sheet" id="sheet5" aria-label="Sheet 5">
-        <div class="page-face front" aria-label="Page 9 Pushpa Shakha">
-          <div class="page-content">
-            <h2>Pushpa Shakha</h2>
-
-            <div class="album" data-album-title="Pushpa Shakha Album">
-              <div class="album-slides" aria-label="Pushpa Shakha photo album">
-                <div class="album-slide">
-                  <img loading="lazy" decoding="async" src="pushpak001.jpg" alt="Pushpa Shakha media 1" />
+            <div class="page-face back" aria-label="Page 8 Pushpak Shakha">
+                <div class="page-content activities">
+                    <h2>Pushpak Shakha</h2>
+                    <p>Shakha activities and highlights:</p>
+                    <ul>
+                        <li>Conducted Sankranthi Shakha kids craft.</li>
+                        <li>Concluded SNY in our Shakha (Pushpak Shakha Dayton) and issued participation certificates to all Balas.</li>
+                    </ul>
+                    <div class="ornament"></div>
+                    <div class="page-number">8</div>
                 </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="pushpak002.jpg" alt="Pushpa Shakha media 2" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="pushpak003.jpg" alt="Pushpa Shakha media 3" />
-                </div>
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="pushpak004.jpg" alt="Pushpa Shakha media 3" />
-                  </div>
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="pushpak005.mp4" alt="Pushpa Shakha media 3" />
-                  </div>
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="pushpak006.mp4" alt="Pushpa Shakha media 3" />
-                  </div>
+            </div>
+        </section>
 
-              </div>
+        <!-- SHEET 5 -->
+        <section class="sheet" id="sheet5" aria-label="Sheet 5">
+            <div class="page-face front" aria-label="Page 9 Pushpa Shakha">
+                <div class="page-content">
+                    <h2>Pushpa Shakha</h2>
 
-              <div class="album-pagination" aria-label="Pushpa Shakha album pagination"></div>
-              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+                    <div class="album" data-album-title="Pushpa Shakha Album">
+                        <div class="album-slides" aria-label="Pushpa Shakha photo album">
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="pushpak001.jpg" alt="Pushpa Shakha media 1" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="pushpak002.jpg" alt="Pushpa Shakha media 2" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="pushpak003.jpg" alt="Pushpa Shakha media 3" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="pushpak004.jpg" alt="Pushpa Shakha media 3" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="pushpak005.mp4" alt="Pushpa Shakha media 3" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="pushpak006.mp4" alt="Pushpa Shakha media 3" />
+                            </div>
+
+                        </div>
+
+                        <div class="album-pagination" aria-label="Pushpa Shakha album pagination"></div>
+                        <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+                    </div>
+
+                    <div class="page-number">9</div>
+                </div>
             </div>
 
-            <div class="page-number">9</div>
-          </div>
-        </div>
-
-        <div class="page-face back" aria-label="Page 10 Saraswati Shakha">
-          <div class="page-content activities">
-            <h2>Saraswati Shakha</h2>
-            <p>On the second Sunday of February, Bala-focused activities were conducted.</p>
-            <ul>
-              <li>Bala led a few games, and we were impressed to see him conduct them confidently—at times even better than some Kishores.</li>
-              <li>A paper airplane-making competition was also organized.</li>
-            </ul>
-            <div class="ornament"></div>
-            <div class="page-number">10</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SHEET 6 -->
-      <section class="sheet" id="sheet6" aria-label="Sheet 6">
-        <div class="page-face front" aria-label="Page 11 Saraswati Shakha">
-          <div class="page-content">
-            <h2>Saraswati Shakha</h2>
-
-            <div class="album" data-album-title="Saraswati Shakha Album">
-              <div class="album-slides" aria-label="Saraswati Shakha media album">
-                <div class="album-slide">
-                  <img loading="lazy" decoding="async" src="saraswati001.jpg" alt="Saraswati Shakha media 1" />
+            <div class="page-face back" aria-label="Page 10 Saraswati Shakha">
+                <div class="page-content activities">
+                    <h2>Saraswati Shakha</h2>
+                    <p>On the second Sunday of February, Bala-focused activities were conducted.</p>
+                    <ul>
+                        <li>Bala led a few games, and we were impressed to see him conduct them confidently—at times even better than some Kishores.</li>
+                        <li>A paper airplane-making competition was also organized.</li>
+                    </ul>
+                    <div class="ornament"></div>
+                    <div class="page-number">10</div>
                 </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="saraswati002.jpg" alt="Saraswati Shakha media 2" />
-                </div>
-                <div class="album-slide" hidden>
-                  <video controls preload="metadata">
-                    <source src="saraswati003.mp4" type="video/mp4" />
-                    Sorry, your browser does not support MP4 video.
-                  </video>
-                </div>
-              </div>
+            </div>
+        </section>
 
-              <div class="album-pagination" aria-label="Saraswati Shakha album pagination"></div>
-              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+        <!-- SHEET 6 -->
+        <section class="sheet" id="sheet6" aria-label="Sheet 6">
+            <div class="page-face front" aria-label="Page 11 Saraswati Shakha">
+                <div class="page-content">
+                    <h2>Saraswati Shakha</h2>
+
+                    <div class="album" data-album-title="Saraswati Shakha Album">
+                        <div class="album-slides" aria-label="Saraswati Shakha media album">
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="saraswati001.jpg" alt="Saraswati Shakha media 1" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="saraswati002.jpg" alt="Saraswati Shakha media 2" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <video controls preload="metadata">
+                                    <source src="saraswati003.mp4" type="video/mp4" />
+                                    Sorry, your browser does not support MP4 video.
+                                </video>
+                            </div>
+                        </div>
+
+                        <div class="album-pagination" aria-label="Saraswati Shakha album pagination"></div>
+                        <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+                    </div>
+
+                    <div class="page-number">11</div>
+                </div>
             </div>
 
-            <div class="page-number">11</div>
-          </div>
-        </div>
+            <div class="page-face back" aria-label="Page 12 Sindhu Shakha">
+                <div class="page-content activities">
+                    <h2>Sindhu Shakha</h2>
+                     <div class="album" data-album-title="Pratap Shakha Articles">
+                        <div class="album-slides" aria-label="Pratap Shakha article album">
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="Sindhu-Article1.JPG" alt="Sindhu Shakha article image 1" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Sindhu-Article2.JPG" alt="Sindhu Shakha article image 2" />
+                            </div>
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="Sindhu-Article3.JPG" alt="Sindhu Shakha article image 1" />
+                            </div>
+                        </div>
+                        <div class="album-pagination" aria-label="Sindhu Shakha article album pagination"></div>
+                        <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+            </div>
+        </section>
 
-        <div class="page-face back" aria-label="Page 12 Sindhu Shakha">
-          <div class="page-content activities">
-            <h2>Sindhu Shakha</h2>
-              <div class="album-slides" aria-label="Sindhu Shakha article album">
-                  <div class="album-slide">
-                      <img loading="lazy" decoding="async" src="Sindhu-Article1.JPG" alt="Sindhu Shakha article image 1" />
-                  </div>
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="Sindhu-Article2.JPG" alt="Sindhu Shakha article image 2" />
-                  </div>
+        <!-- SHEET 7 -->
+        <section class="sheet" id="sheet7" aria-label="Sheet 7">
+            <div class="page-face front" aria-label="Page 13 Sindhu Shakha">
+                <div class="page-content">
+                    <h2>Sindhu Shakha</h2>
 
+                    <div class="album" data-album-title="Sindhu Shakha Album">
+                        <div class="album-slides" aria-label="Sindhu Shakha photo album">
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="Sindhu-Shakha-001.jpg" alt="Sindhu Shakha media 1" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Sindhu-Shakha-002.jpg" alt="Sindhu Shakha media 2" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Sindhu-Shakha-006.jpg" alt="Sindhu Shakha media 3" />
+                            </div>
 
-                  <div class="album-slide">
-                      <img loading="lazy" decoding="async" src="Sindhu-Article3.JPG" alt="Sindhu Shakha article image 1" />
-                  </div>
- 
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="Sindhu-Shakha-008.jpg" alt="Sindhu Shakha media 1" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Sindhu-Shakha-012.jpg" alt="Sindhu Shakha media 2" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Sindhu-Shakha-014.jpg" alt="Sindhu Shakha media 3" />
+                            </div>
 
-              </div>
-            <div class="ornament"></div>
-            <div class="page-number">12</div>
-          </div>
-        </div>
-      </section>
+                        </div>
 
-      <!-- SHEET 7 -->
-      <section class="sheet" id="sheet7" aria-label="Sheet 7">
-        <div class="page-face front" aria-label="Page 13 Sindhu Shakha">
-          <div class="page-content">
-            <h2>Sindhu Shakha</h2>
+                        <div class="album-pagination" aria-label="Sindhu Shakha album pagination"></div>
+                        <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+                    </div>
 
-            <div class="album" data-album-title="Sindhu Shakha Album">
-              <div class="album-slides" aria-label="Sindhu Shakha photo album">
-                <div class="album-slide">
-                  <img loading="lazy" decoding="async" src="Sindhu-Shakha-001.jpg" alt="Sindhu Shakha media 1" />
+                    <div class="page-number">13</div>
                 </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="Sindhu-Shakha-002.jpg" alt="Sindhu Shakha media 2" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="Sindhu-Shakha-006.jpg" alt="Sindhu Shakha media 3" />
-                </div>
-
-                  <div class="album-slide">
-                      <img loading="lazy" decoding="async" src="Sindhu-Shakha-008.jpg" alt="Sindhu Shakha media 1" />
-                  </div>
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="Sindhu-Shakha-012.jpg" alt="Sindhu Shakha media 2" />
-                  </div>
-                  <div class="album-slide" hidden>
-                      <img loading="lazy" decoding="async" src="Sindhu-Shakha-014.jpg" alt="Sindhu Shakha media 3" />
-                  </div>
-                  
-              </div>
-
-              <div class="album-pagination" aria-label="Sindhu Shakha album pagination"></div>
-              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
             </div>
 
-            <div class="page-number">13</div>
-          </div>
-        </div>
-
-        <div class="page-face back" aria-label="Page 14 Bharati Shakha">
-          <div class="page-content activities">
-            <h2>Bharati Shakha</h2>
-            <p>Shakha activities and highlights:</p>
-            <ul>
-              <li>Makara Sankranti Utsav was celebrated with great enthusiasm.</li>
-              <li>There was a good Bala turnout on the day of the utsav; the children participated in various games and thoroughly enjoyed themselves.</li>
-              <li>During the baudhik, the children learned about the significance of Makara Sankranti and how it is celebrated across India.</li>
-            </ul>
-            <div class="ornament"></div>
-            <div class="page-number">14</div>
-          </div>
-        </div>
-      </section>
-
-      <!-- SHEET 8 -->
-      <section class="sheet" id="sheet8" aria-label="Sheet 8">
-        <div class="page-face front" aria-label="Page 15 Bharati Shakha">
-          <div class="page-content">
-            <h2>Bharati Shakha</h2>
-
-            <div class="album" data-album-title="Bharati Shakha Album">
-              <div class="album-slides" aria-label="Bharati Shakha photo album">
-                <div class="album-slide">
-                  <img loading="lazy" decoding="async" src="Bharati001.jpg" alt="Bharati Shakha media 1" />
+            <div class="page-face back" aria-label="Page 14 Bharati Shakha">
+                <div class="page-content activities">
+                    <h2>Bharati Shakha</h2>
+                    <p>Shakha activities and highlights:</p>
+                    <ul>
+                        <li>Makara Sankranti Utsav was celebrated with great enthusiasm.</li>
+                        <li>There was a good Bala turnout on the day of the utsav; the children participated in various games and thoroughly enjoyed themselves.</li>
+                        <li>During the baudhik, the children learned about the significance of Makara Sankranti and how it is celebrated across India.</li>
+                    </ul>
+                    <div class="ornament"></div>
+                    <div class="page-number">14</div>
                 </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="Bharati002.jpeg" alt="Bharati Shakha media 2" />
-                </div>
-                <div class="album-slide" hidden>
-                  <img loading="lazy" decoding="async" src="Bharati003.jpg" alt="Bharati Shakha media 3" />
-                </div>
-              </div>
+            </div>
+        </section>
 
-              <div class="album-pagination" aria-label="Bharati Shakha album pagination"></div>
-              <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+        <!-- SHEET 8 -->
+        <section class="sheet" id="sheet8" aria-label="Sheet 8">
+            <div class="page-face front" aria-label="Page 15 Bharati Shakha">
+                <div class="page-content">
+                    <h2>Bharati Shakha</h2>
+
+                    <div class="album" data-album-title="Bharati Shakha Album">
+                        <div class="album-slides" aria-label="Bharati Shakha photo album">
+                            <div class="album-slide">
+                                <img loading="lazy" decoding="async" src="Bharati001.jpg" alt="Bharati Shakha media 1" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Bharati002.jpeg" alt="Bharati Shakha media 2" />
+                            </div>
+                            <div class="album-slide" hidden>
+                                <img loading="lazy" decoding="async" src="Bharati003.jpg" alt="Bharati Shakha media 3" />
+                            </div>
+                        </div>
+
+                        <div class="album-pagination" aria-label="Bharati Shakha album pagination"></div>
+                        <div class="album-caption">Tap / click the dots (or use arrow keys when focused) to switch media.</div>
+                    </div>
+
+                    <div class="page-number">15</div>
+                </div>
             </div>
 
-            <div class="page-number">15</div>
-          </div>
-        </div>
-
-        <div class="page-face back" aria-label="Page 16 Back Cover">
-          <div class="page-content back-cover">
-            <h2>HSS Balagokulam</h2>
-            <p><em>To facilitate children to appreciate, learn, and practice Hindu way of life.</em></p>
-            <p><strong>Ohio Vibhag</strong></p>
-            <p>
-              Visit us:
-              <a href="https://balagokulam.hssus.org/" target="_blank" rel="noreferrer">balagokulam.hssus.org</a>
-            </p>
-            <p>&copy; 2026 HSSUS.ORG</p>
-            <div class="page-number">16</div>
-          </div>
-        </div>
-      </section>
+            <div class="page-face back" aria-label="Page 16 Back Cover">
+                <div class="page-content back-cover">
+                    <h2>HSS Balagokulam</h2>
+                    <p><em>To facilitate children to appreciate, learn, and practice Hindu way of life.</em></p>
+                    <p><strong>Ohio Vibhag</strong></p>
+                    <p>
+                        Visit us:
+                        <a href="https://balagokulam.hssus.org/" target="_blank" rel="noreferrer">balagokulam.hssus.org</a>
+                    </p>
+                    <p>&copy; 2026 HSSUS.ORG</p>
+                    <div class="page-number">16</div>
+                </div>
+            </div>
+        </section>
 
     </div>
 
     <div class="controls" role="navigation" aria-label="Magazine navigation">
-      <button id="prevBtn" type="button" aria-label="Previous page">Previous</button>
-      <button id="nextBtn" type="button" aria-label="Next page">Next</button>
+        <button id="prevBtn" type="button" aria-label="Previous page">Previous</button>
+        <button id="nextBtn" type="button" aria-label="Next page">Next</button>
     </div>
-  </div>
+</div>
 
-  <script>
+<script>
     (function () {
       "use strict";
 
@@ -1308,6 +1304,6 @@
       if (mqMobile.addEventListener) mqMobile.addEventListener("change", syncMode);
       else mqMobile.addListener(syncMode);
     })();
-  </script>
+</script>
 </body>
 </html>
